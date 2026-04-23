@@ -3,11 +3,14 @@ import 'package:isar/isar.dart';
 import '../../core/providers/database_provider.dart';
 import '../../core/services/hmac_service.dart';
 import '../models/sale.dart';
+import '../models/invoice_sequence.dart';
 
 abstract class ISaleRepository {
   Future<List<Sale>> getAll();
   Future<void> save(Sale sale);
   Future<List<Sale>> getByDateRange(DateTime start, DateTime end);
+  Future<InvoiceSequence> getNextInvoiceSequence(String prefix);
+  Future<void> updateInvoiceSequence(InvoiceSequence sequence);
 }
 
 class IsarSaleRepository implements ISaleRepository {
@@ -19,7 +22,7 @@ class IsarSaleRepository implements ISaleRepository {
   @override
   Future<List<Sale>> getAll() async {
     if (_isar == null) return [];
-    final sales = await _isar!.sales.where().sortByDateDesc().findAll();
+    final sales = await _isar.sales.where().sortByDateDesc().findAll();
     final verified = <Sale>[];
     for (final s in sales) {
       if (await _hmacService.verifyInstance(s)) {
@@ -33,15 +36,15 @@ class IsarSaleRepository implements ISaleRepository {
   Future<void> save(Sale sale) async {
     if (_isar == null) return;
     sale.hmacSignature = await _hmacService.signSnapshot(sale);
-    await _isar!.writeTxn(() async {
-      await _isar!.sales.put(sale);
+    await _isar.writeTxn(() async {
+      await _isar.sales.put(sale);
     });
   }
 
   @override
   Future<List<Sale>> getByDateRange(DateTime start, DateTime end) async {
     if (_isar == null) return [];
-    final sales = await _isar!.sales
+    final sales = await _isar.sales
         .filter()
         .dateBetween(start, end)
         .sortByDateDesc()
@@ -54,6 +57,27 @@ class IsarSaleRepository implements ISaleRepository {
       }
     }
     return verified;
+  }
+
+  @override
+  Future<InvoiceSequence> getNextInvoiceSequence(String prefix) async {
+    if (_isar == null) return InvoiceSequence(prefix: prefix);
+    var sequence = await _isar.invoiceSequences.where().prefixEqualTo(prefix).findFirst();
+    if (sequence == null) {
+      sequence = InvoiceSequence(prefix: prefix);
+      await _isar.writeTxn(() async {
+        await _isar.invoiceSequences.put(sequence!);
+      });
+    }
+    return sequence;
+  }
+
+  @override
+  Future<void> updateInvoiceSequence(InvoiceSequence sequence) async {
+    if (_isar == null) return;
+    await _isar.writeTxn(() async {
+      await _isar.invoiceSequences.put(sequence);
+    });
   }
 }
 

@@ -39,6 +39,7 @@ class Member {
   DateTime? lastCheckIn;
   String? lastCheckInDevice;
 
+  double? planPrice;
   late String hmacSignature;
 
   Member({
@@ -48,6 +49,7 @@ class Member {
     required this.joinDate,
     this.planId,
     this.planName,
+    this.planPrice,
     this.expiryDate,
     this.totalPaid = 0,
     this.paymentIds = const [],
@@ -56,6 +58,7 @@ class Member {
     required this.lastUpdated,
     this.gender,
     this.age,
+    this.profileImageUrl,
     this.checkInPin,
     this.lastCheckIn,
     this.lastCheckInDevice,

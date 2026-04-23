@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../data/models/attendance.dart';
-import '../../../core/utils/date_utils.dart';
+import 'package:ironm/data/models/attendance.dart';
+import 'package:ironm/core/utils/date_utils.dart';
 
 class AttendanceRow extends StatelessWidget {
   final Attendance attendance;

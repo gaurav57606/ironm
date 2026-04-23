@@ -21,8 +21,8 @@ class IsarEventRepository implements IEventRepository {
 
     if (_isar != null) {
       // 2. Persist to Isar
-      await _isar!.writeTxn(() async {
-        await _isar!.domainEvents.put(event);
+      await _isar.writeTxn(() async {
+        await _isar.domainEvents.put(event);
       });
     }
 
@@ -33,21 +33,21 @@ class IsarEventRepository implements IEventRepository {
   @override
   Future<List<DomainEvent>> getAll() async {
     if (_isar == null) return [];
-    final events = await _isar!.domainEvents.where().sortByDeviceTimestamp().findAll();
+    final events = await _isar.domainEvents.where().sortByDeviceTimestamp().findAll();
     return _verifyEvents(events);
   }
 
   @override
   Future<List<DomainEvent>> getAllUnsynced() async {
     if (_isar == null) return [];
-    final events = await _isar!.domainEvents.where().syncedEqualTo(false).sortByDeviceTimestamp().findAll();
+    final events = await _isar.domainEvents.where().syncedEqualTo(false).sortByDeviceTimestamp().findAll();
     return _verifyEvents(events);
   }
 
   @override
   Future<DomainEvent?> getById(String id) async {
     if (_isar == null) return null;
-    final event = await _isar!.domainEvents.where().idEqualTo(id).findFirst();
+    final event = await _isar.domainEvents.where().idEqualTo(id).findFirst();
     if (event != null && await _hmacService.verifyInstance(event)) {
       return event;
     }
@@ -57,18 +57,18 @@ class IsarEventRepository implements IEventRepository {
   @override
   Future<List<DomainEvent>> getByEntityId(String entityId) async {
     if (_isar == null) return [];
-    final events = await _isar!.domainEvents.where().entityIdEqualTo(entityId).sortByDeviceTimestamp().findAll();
+    final events = await _isar.domainEvents.where().entityIdEqualTo(entityId).sortByDeviceTimestamp().findAll();
     return _verifyEvents(events);
   }
 
   @override
   Future<void> markAsSynced(String eventId) async {
     if (_isar == null) return;
-    await _isar!.writeTxn(() async {
-      final event = await _isar!.domainEvents.where().idEqualTo(eventId).findFirst();
+    await _isar.writeTxn(() async {
+      final event = await _isar.domainEvents.where().idEqualTo(eventId).findFirst();
       if (event != null) {
         event.synced = true;
-        await _isar!.domainEvents.put(event);
+        await _isar.domainEvents.put(event);
       }
     });
   }
@@ -79,8 +79,8 @@ class IsarEventRepository implements IEventRepository {
       event.hmacSignature = await _hmacService.signEvent(event);
     }
     if (_isar != null) {
-      await _isar!.writeTxn(() async {
-        await _isar!.domainEvents.put(event);
+      await _isar.writeTxn(() async {
+        await _isar.domainEvents.put(event);
       });
     }
     _eventBus.publish(event);

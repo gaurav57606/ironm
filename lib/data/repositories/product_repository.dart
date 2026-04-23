@@ -21,13 +21,13 @@ class IsarProductRepository implements IProductRepository {
       // Return default products if no database (demo mode)
       return _getDefaultProducts();
     }
-    final products = await _isar!.products.where().findAll();
+    final products = await _isar.products.where().findAll();
     if (products.isEmpty) {
       // Seed defaults
       for (final p in _getDefaultProducts()) {
         await save(p);
       }
-      return _isar!.products.where().findAll();
+      return _isar.products.where().findAll();
     }
     return products;
   }
@@ -35,22 +35,22 @@ class IsarProductRepository implements IProductRepository {
   @override
   Future<Product?> getById(String id) async {
     if (_isar == null) return null;
-    return await _isar!.products.where().idEqualTo(id).findFirst();
+    return await _isar.products.where().idEqualTo(id).findFirst();
   }
 
   @override
   Future<void> save(Product product) async {
     if (_isar == null) return;
-    await _isar!.writeTxn(() async {
-      await _isar!.products.put(product);
+    await _isar.writeTxn(() async {
+      await _isar.products.put(product);
     });
   }
 
   @override
   Future<void> delete(String id) async {
     if (_isar == null) return;
-    await _isar!.writeTxn(() async {
-      await _isar!.products.where().idEqualTo(id).deleteAll();
+    await _isar.writeTxn(() async {
+      await _isar.products.where().idEqualTo(id).deleteAll();
     });
   }
 

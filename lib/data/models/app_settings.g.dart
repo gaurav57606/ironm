@@ -15,7 +15,7 @@ extension GetAppSettingsCollection on Isar {
 
 const AppSettingsSchema = CollectionSchema(
   name: r'AppSettings',
-  id: -563356177902234,
+  id: -5633561779022347008,
   properties: {
     r'businessType': PropertySchema(
       id: 0,

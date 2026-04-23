@@ -23,7 +23,7 @@ class StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgCard,
+        color: AppColors.bg3,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.border),
       ),
@@ -36,7 +36,7 @@ class StatCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.1),
+                  color: iconColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: iconColor, size: 20),
@@ -44,7 +44,7 @@ class StatCard extends StatelessWidget {
               if (trend != null)
                 Text(
                   trend!,
-                  style: AppTextStyles.caption.copyWith(color: AppColors.green),
+                  style: AppTextStyles.subtext.copyWith(color: AppColors.active),
                 ),
             ],
           ),

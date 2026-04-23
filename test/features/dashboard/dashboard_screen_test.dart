@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ironbook_gm/features/dashboard/presentation/dashboard_screen.dart';
-import 'package:ironbook_gm/features/dashboard/viewmodel/dashboard_viewmodel.dart';
+import 'package:ironm/features/dashboard/presentation/dashboard_screen.dart';
+import 'package:ironm/features/dashboard/viewmodel/dashboard_viewmodel.dart';
 
 void main() {
   testWidgets('DashboardScreen shows stats correctly', (tester) async {

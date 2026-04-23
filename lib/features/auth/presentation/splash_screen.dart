@@ -27,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgMain,
+      backgroundColor: AppColors.bg,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -54,11 +54,11 @@ class _SplashScreenState extends State<SplashScreen> {
               textAlign: TextAlign.center,
               text: TextSpan(
                 style: AppTextStyles.h1,
-                children: [
-                  const TextSpan(text: 'IronBook '),
+                children: const [
+                  TextSpan(text: 'IronBook '),
                   TextSpan(
                     text: 'GM',
-                    style: const TextStyle(color: AppColors.orange),
+                    style: TextStyle(color: AppColors.orange),
                   ),
                 ],
               ),
@@ -88,3 +88,4 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 }
+

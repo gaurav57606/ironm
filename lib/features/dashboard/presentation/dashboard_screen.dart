@@ -4,10 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
-import '../../../data/notifiers/members_notifier.dart';
-import '../../../shared/widgets/app_bottom_nav.dart';
+import '../../members/viewmodel/members_viewmodel.dart';
+import '../viewmodel/dashboard_viewmodel.dart';
 import '../../../shared/widgets/status_bar_wrapper.dart';
-import 'widgets/stat_card.dart';
 import 'widgets/member_health_donut.dart';
 import 'widgets/revenue_mini_bars.dart';
 import 'widgets/alert_banner.dart';
@@ -18,11 +17,12 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final members = ref.watch(membersProvider);
-    final stats = ref.watch(memberStatsProvider);
-    
-    final activeCount = stats.active;
-    final expiringCount = stats.expiringSoon;
-    final expiredCount = stats.expired;
+    final statsAsync = ref.watch(dashboardStatsProvider);
+    final stats = statsAsync.value ?? const DashboardStats();
+
+    final activeCount = stats.activeMembers;
+    final expiringCount = stats.expiringMembers;
+    final expiredCount = stats.expiredMembers;
     final totalCount = members.length;
 
     return Container(
@@ -38,7 +38,8 @@ class DashboardScreen extends ConsumerWidget {
                   padding: const EdgeInsets.only(bottom: 24),
                   children: [
                     _buildSubHeader(),
-                    _buildStatsGrid(totalCount, activeCount, expiringCount, expiredCount),
+                    _buildStatsGrid(
+                        totalCount, activeCount, expiringCount, expiredCount),
                     MemberHealthDonut(
                       active: activeCount,
                       expiring: expiringCount,
@@ -59,7 +60,8 @@ class DashboardScreen extends ConsumerWidget {
                         onTap: () => context.push('/members?filter=expiring'),
                       ),
                     const SizedBox(height: 12),
-                    _buildSectionHeader(context, 'Due Today', '/members?filter=due-today'),
+                    _buildSectionHeader(
+                        context, 'Due Today', '/members?filter=due-today'),
                     _buildDueTodayList(members),
                     _buildSectionHeader(context, 'This Month', null),
                     const RevenueMiniBars(revenue: 42800, trend: 12),
@@ -68,12 +70,6 @@ class DashboardScreen extends ConsumerWidget {
               ),
             ],
           ),
-        ),
-        bottomNavigationBar: AppBottomNavBar(
-          currentIndex: 0,
-          onTap: (index) {
-            // Navigation handled by AppBottomNavBar callbacks or state
-          },
         ),
       ),
     );
@@ -88,11 +84,15 @@ class DashboardScreen extends ConsumerWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Good morning', style: AppTextStyles.label.copyWith(color: AppColors.textSecondary, fontSize: 11)),
-              Text("Raj's Fitness", style: AppTextStyles.h2.copyWith(fontSize: 18)),
+              Text('Good morning',
+                  style: AppTextStyles.label
+                      .copyWith(color: AppColors.textSecondary, fontSize: 11)),
+              Text("Raj's Fitness",
+                  style: AppTextStyles.h2.copyWith(fontSize: 18)),
               Text(
                 DateFormat('EEEE, d MMMM yyyy').format(DateTime.now()),
-                style: AppTextStyles.label.copyWith(color: AppColors.textMuted, fontSize: 10),
+                style: AppTextStyles.label
+                    .copyWith(color: AppColors.textMuted, fontSize: 10),
               ),
             ],
           ),
@@ -104,7 +104,11 @@ class DashboardScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(11),
             ),
             alignment: Alignment.center,
-            child: const Text('R', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
+            child: const Text('R',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16)),
           ),
         ],
       ),
@@ -122,17 +126,25 @@ class DashboardScreen extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Expanded(child: _buildStatCard('Total Members', total.toString(), isHighlight: true)),
+              Expanded(
+                  child: _buildStatCard('Total Members', total.toString(),
+                      isHighlight: true)),
               const SizedBox(width: 8),
-              Expanded(child: _buildStatCard('Active', active.toString(), color: AppColors.active)),
+              Expanded(
+                  child: _buildStatCard('Active', active.toString(),
+                      color: AppColors.active)),
             ],
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              Expanded(child: _buildStatCard('Expiring Soon', expiring.toString(), color: AppColors.expiring)),
+              Expanded(
+                  child: _buildStatCard('Expiring Soon', expiring.toString(),
+                      color: AppColors.expiring)),
               const SizedBox(width: 8),
-              Expanded(child: _buildStatCard('Expired', expired.toString(), color: AppColors.expired)),
+              Expanded(
+                  child: _buildStatCard('Expired', expired.toString(),
+                      color: AppColors.expired)),
             ],
           ),
           const SizedBox(height: 12),
@@ -141,7 +153,8 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatCard(String label, String value, {Color? color, bool isHighlight = false}) {
+  Widget _buildStatCard(String label, String value,
+      {Color? color, bool isHighlight = false}) {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -157,7 +170,8 @@ class DashboardScreen extends ConsumerWidget {
             value,
             style: AppTextStyles.h1.copyWith(
               fontSize: 22,
-              color: isHighlight ? Colors.white : (color ?? AppColors.textPrimary),
+              color:
+                  isHighlight ? Colors.white : (color ?? AppColors.textPrimary),
             ),
           ),
           const SizedBox(height: 3),
@@ -167,7 +181,9 @@ class DashboardScreen extends ConsumerWidget {
               fontSize: 9,
               fontWeight: FontWeight.w500,
               letterSpacing: 0.4,
-              color: isHighlight ? Colors.white.withOpacity(0.7) : AppColors.textSecondary,
+              color: isHighlight
+                  ? Colors.white.withValues(alpha: 0.7)
+                  : AppColors.textSecondary,
             ),
           ),
         ],
@@ -175,7 +191,8 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title, String? route) {
+  Widget _buildSectionHeader(
+      BuildContext context, String title, String? route) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       child: Row(
@@ -195,7 +212,10 @@ class DashboardScreen extends ConsumerWidget {
               onTap: () => context.push(route),
               child: Text(
                 'See all',
-                style: AppTextStyles.label.copyWith(fontSize: 10, color: AppColors.orange, fontWeight: FontWeight.w500),
+                style: AppTextStyles.label.copyWith(
+                    fontSize: 10,
+                    color: AppColors.orange,
+                    fontWeight: FontWeight.w500),
               ),
             ),
         ],
@@ -205,7 +225,8 @@ class DashboardScreen extends ConsumerWidget {
 
   Widget _buildDueTodayList(List members) {
     final now = DateTime.now();
-    final dueToday = members.where((m) => m.getDaysRemaining(now) <= 3).take(2).toList();
+    final dueToday =
+        members.where((m) => m.getDaysRemaining(now) <= 3).take(2).toList();
 
     if (dueToday.isEmpty) {
       return Container(
@@ -217,7 +238,8 @@ class DashboardScreen extends ConsumerWidget {
           border: Border.all(color: AppColors.border),
         ),
         child: Center(
-          child: Text('No memberships due today', style: AppTextStyles.label.copyWith(color: AppColors.textMuted)),
+          child: Text('No memberships due today',
+              style: AppTextStyles.label.copyWith(color: AppColors.textMuted)),
         ),
       );
     }
@@ -233,7 +255,8 @@ class DashboardScreen extends ConsumerWidget {
         children: [
           for (int i = 0; i < dueToday.length; i++) ...[
             _buildDueMemberRow(dueToday[i]),
-            if (i < dueToday.length - 1) const Divider(height: 1, color: AppColors.border),
+            if (i < dueToday.length - 1)
+              const Divider(height: 1, color: AppColors.border),
           ],
         ],
       ),
@@ -253,13 +276,14 @@ class DashboardScreen extends ConsumerWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(9),
             ),
             alignment: Alignment.center,
             child: Text(
               member.name.substring(0, 1).toUpperCase(),
-              style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 11),
+              style: TextStyle(
+                  color: color, fontWeight: FontWeight.w700, fontSize: 11),
             ),
           ),
           const SizedBox(width: 8),
@@ -267,17 +291,24 @@ class DashboardScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(member.name, style: AppTextStyles.body.copyWith(fontSize: 12, fontWeight: FontWeight.w600)),
-                Text('${member.planName ?? "Monthly"} · ₹${member.planPrice ?? 1298}', 
-                  style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.textSecondary)),
+                Text(member.name,
+                    style: AppTextStyles.body
+                        .copyWith(fontSize: 12, fontWeight: FontWeight.w600)),
+                Text(
+                    '${member.planName ?? "Monthly"} · ₹${member.planPrice ?? 1298}',
+                    style: AppTextStyles.label
+                        .copyWith(fontSize: 9, color: AppColors.textSecondary)),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(days.toString(), style: AppTextStyles.h3.copyWith(fontSize: 13, color: color)),
-              Text('days left', style: AppTextStyles.label.copyWith(fontSize: 8, color: AppColors.textMuted)),
+              Text(days.toString(),
+                  style: AppTextStyles.h3.copyWith(fontSize: 13, color: color)),
+              Text('days left',
+                  style: AppTextStyles.label
+                      .copyWith(fontSize: 8, color: AppColors.textMuted)),
             ],
           ),
         ],
@@ -285,3 +316,4 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 }
+

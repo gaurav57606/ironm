@@ -1,0 +1,232 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:collection/collection.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_text_styles.dart';
+import '../../members/viewmodel/members_viewmodel.dart';
+import '../../payments/viewmodel/payments_viewmodel.dart';
+import '../../../data/models/member.dart';
+import '../../../data/models/payment.dart';
+import '../../../shared/widgets/status_bar_wrapper.dart';
+
+class InvoiceScreen extends ConsumerWidget {
+  final String memberId;
+  const InvoiceScreen({super.key, required this.memberId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final member = ref.watch(membersProvider).firstWhereOrNull((m) => m.memberId == memberId);
+    final payments = ref.watch(memberPaymentsProvider(memberId));
+    final latestPayment = payments.isNotEmpty ? payments.first : null;
+
+    if (member == null) {
+      return const Scaffold(body: Center(child: Text('Member not found')));
+    }
+
+    return Container(
+      decoration: const BoxDecoration(color: AppColors.bg),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: StatusBarWrapper(
+          child: Column(
+            children: [
+              _buildAppBar(context),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  children: [
+                    _buildInvoiceCard(member, latestPayment),
+                    _buildSectionHeader('Payment Method'),
+                    _buildPaymentMethodChips(latestPayment?.method ?? 'Cash'),
+                    const SizedBox(height: 20),
+                    _buildShareButton(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAppBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
+      child: Row(
+        children: [
+          _buildIconButton(Icons.chevron_left, () => context.pop()),
+          const SizedBox(width: 8),
+          Text('Invoice', style: AppTextStyles.h2.copyWith(fontSize: 16)),
+          const Spacer(),
+          _buildIconButton(Icons.download_rounded, () {}),
+          const SizedBox(width: 6),
+          _buildIconButton(Icons.print_rounded, () {}),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIconButton(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          color: AppColors.bg3,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.border),
+        ),
+        alignment: Alignment.center,
+        child: Icon(icon, size: 13, color: AppColors.textPrimary),
+      ),
+    );
+  }
+
+  Widget _buildInvoiceCard(Member member, Payment? payment) {
+    final subtotal = (payment?.amount ?? 1298) / 1.18;
+    final gst = (payment?.amount ?? 1298) - subtotal;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1A1206), Color(0xFF2A1D0A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Raj's Fitness", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.orange)),
+                  const SizedBox(height: 2),
+                  Text('Sector 14, Gurugram · GSTIN 07ABC...', style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.textSecondary)),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text('INVOICE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.orange)),
+                  Text('#${payment?.invoiceNumber ?? "INV-2026-0142"}', style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.textSecondary)),
+                ],
+              ),
+            ],
+          ),
+          const Padding(padding: EdgeInsets.symmetric(vertical: 7), child: Divider(color: AppColors.border)),
+          _buildInvRow('Member', member.name),
+          _buildInvRow('Date', payment != null ? DateFormat('dd MMM yyyy').format(payment.date) : 'N/A'),
+          _buildInvRow('Period', payment != null ? '${DateFormat('dd MMM').format(payment.date)} – ${DateFormat('dd MMM yyyy').format(payment.date.add(const Duration(days: 30)))}' : 'N/A'),
+          const Padding(padding: EdgeInsets.symmetric(vertical: 7), child: Divider(color: AppColors.border)),
+          _buildInvRow('Gym Access', '₹${subtotal.toStringAsFixed(2)}'),
+          _buildInvRow('Locker', '₹150.00'),
+          _buildInvRow('Steam Room', '₹150.00'),
+          const Padding(padding: EdgeInsets.symmetric(vertical: 7), child: Divider(color: AppColors.border)),
+          _buildInvRow('Subtotal', '₹${(subtotal + 300).toStringAsFixed(2)}'),
+          _buildInvRow('GST @ 18%', '₹${gst.toStringAsFixed(2)}'),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Total Due', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+              Text('₹${payment?.amount.toStringAsFixed(2) ?? "1,298.00"}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.orange)),
+            ],
+          ),
+          const Padding(padding: EdgeInsets.symmetric(vertical: 7), child: Divider(color: AppColors.border)),
+          Text('HDFC · A/C 1234567890 · IFSC HDFC0001234', style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.textSecondary)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInvRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.textSecondary)),
+          Text(value, style: AppTextStyles.label.copyWith(fontSize: 9, fontWeight: FontWeight.w500)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 16, 14, 7),
+      child: Text(
+        title.toUpperCase(),
+        style: AppTextStyles.label.copyWith(
+          fontSize: 9,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textSecondary,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentMethodChips(String current) {
+    final methods = ['Cash', 'UPI', 'Card', 'Bank'];
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      child: Row(
+        children: methods.map((m) => _buildChip(m, m.toLowerCase() == current.toLowerCase())).toList(),
+      ),
+    );
+  }
+
+  Widget _buildChip(String label, bool isSelected) {
+    return Container(
+      margin: const EdgeInsets.only(right: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: isSelected ? AppColors.orange.withValues(alpha: 0.1) : AppColors.bg3,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: isSelected ? AppColors.orange : AppColors.border),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: isSelected ? AppColors.orange : AppColors.textSecondary,
+          fontWeight: FontWeight.w600,
+          fontSize: 9,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShareButton() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 14),
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: () {},
+        icon: const Icon(Icons.share_outlined, size: 13),
+        label: const Text('Share via WhatsApp'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.orange,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+        ),
+      ),
+    );
+  }
+}
+

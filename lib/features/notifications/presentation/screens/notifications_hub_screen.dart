@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../shared/widgets/status_bar_wrapper.dart';
@@ -141,7 +140,7 @@ class NotificationsHubScreen extends ConsumerWidget {
         color: AppColors.elevation2,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: unread ? color.withOpacity(0.3) : AppColors.border,
+          color: unread ? color.withValues(alpha: 0.3) : AppColors.border,
           width: unread ? 1.5 : 1,
         ),
       ),
@@ -151,7 +150,7 @@ class NotificationsHubScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(icon, color: color, size: 20),

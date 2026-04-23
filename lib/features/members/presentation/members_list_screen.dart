@@ -3,130 +3,45 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/utils/clock.dart';
+import '../../../core/utils/date_formatter.dart';
+import '../../../data/models/member.dart';
 import '../viewmodel/members_viewmodel.dart';
-import '../../../shared/widgets/error_view.dart';
 
-// 🔒 LOCKED SCREEN — MembersListScreen
 class MembersListScreen extends ConsumerWidget {
   const MembersListScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final membersAsync = ref.watch(membersViewModelProvider);
+    final filteredMembers = ref.watch(filteredMembersProvider);
+    final allMembersCount = ref.watch(membersProvider).length;
 
     return Scaffold(
-      backgroundColor: AppColors.bgMain,
-      appBar: AppBar(
-        title: const Text('Directory'),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.search, color: AppColors.textPrimary),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          _buildFilterTabs(),
-          Expanded(
-            child: membersAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator(color: AppColors.orange)),
-              error: (err, stack) => ErrorView(
-                message: 'Failed to load members',
-                onRetry: () => ref.invalidate(membersViewModelProvider),
-              ),
-              data: (members) => ListView.separated(
-                padding: const EdgeInsets.all(24),
-                itemCount: members.isEmpty ? 5 : members.length, // Show mock if empty for visual demo
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (ctx, i) {
-                  if (members.isEmpty) return _buildMockMemberTile(i);
-                  return _buildMemberTile(context, members[i]);
-                },
-              ),
-            ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.go('/members/add'),
-        backgroundColor: AppColors.orange,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
-      bottomNavigationBar: _buildBottomNav(context),
-    );
-  }
-
-  Widget _buildFilterTabs() {
-    final tabs = ['All', 'Active', 'Expiring', 'Expired'];
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      child: Row(
-        children: tabs.map((tab) {
-          final isSelected = tab == 'All';
-          return Container(
-            margin: const EdgeInsets.only(right: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: isSelected ? AppColors.orange : AppColors.bgCard,
-              borderRadius: BorderRadius.circular(20),
-              border: isSelected ? null : Border.all(color: AppColors.border),
-            ),
-            child: Text(
-              tab,
-              style: AppTextStyles.label.copyWith(
-                color: isSelected ? Colors.white : AppColors.textSecondary,
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildMemberTile(BuildContext context, dynamic member) {
-    return GestureDetector(
-      onTap: () => context.go('/members/${member.id}'),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.bgCard,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.border),
+      backgroundColor: AppColors.bg,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppColors.backgroundGradient,
         ),
-        child: Row(
+        child: Column(
           children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: const BoxDecoration(
-                color: AppColors.bgAccent,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.person_outline, color: AppColors.textSecondary),
-            ),
-            const SizedBox(width: 12),
+            _buildAppBar(context),
+            _buildQuickStats(context, ref),
+            _buildSearchAndFilters(context, ref),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 children: [
-                  Text(member.name, style: AppTextStyles.title),
-                  const SizedBox(height: 2),
-                  Text(member.planName, style: AppTextStyles.subtext),
+                  _buildMemberListContainer(context, filteredMembers, ref),
+                  const SizedBox(height: 12),
+                  Center(
+                    child: Text(
+                      'Showing ${filteredMembers.length} of $allMembersCount members',
+                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                 ],
               ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  'Exp: ${_formatDate(member.expiryDate)}',
-                  style: AppTextStyles.subtext,
-                ),
-                const SizedBox(height: 4),
-                _buildStatusTag(member.isActive),
-              ],
             ),
           ],
         ),
@@ -134,104 +49,347 @@ class MembersListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildMockMemberTile(int i) {
-    final names = ['Suresh Raina', 'Mahendra Singh', 'Virat Kohli', 'Rohit Sharma', 'Hardik Pandya'];
-    final plans = ['3 Months', '12 Months', 'Monthly', '6 Months', 'Monthly'];
-    final status = [true, true, false, true, false];
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.bgCard,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-      ),
+  Widget _buildAppBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 14, right: 14, top: 44, bottom: 8),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: const BoxDecoration(
-              color: AppColors.bgAccent,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.person_outline, color: AppColors.textSecondary),
+          Text(
+            'Members',
+            style: AppTextStyles.h2.copyWith(fontSize: 22, fontWeight: FontWeight.w800),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(names[i % names.length], style: AppTextStyles.title),
-                const SizedBox(height: 2),
-                Text(plans[i % plans.length], style: AppTextStyles.subtext),
-              ],
+          GestureDetector(
+             onTap: () => context.push('/gym/add-member'),
+             child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                  SizedBox(width: 6),
+                  Text('New Member', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
+                ],
+              ),
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text('Exp: 12 May 2024', style: AppTextStyles.subtext),
-              const SizedBox(height: 4),
-              _buildStatusTag(status[i % status.length]),
-            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatusTag(bool isActive) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: (isActive ? AppColors.green : AppColors.red).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6),
+  Widget _buildQuickStats(BuildContext context, WidgetRef ref) {
+    final all = ref.watch(membersProvider);
+    final now = ref.watch(clockProvider).now;
+    
+    int active = 0;
+    int expiring = 0;
+    for (final m in all) {
+      final status = m.getStatus(now);
+      if (status == MemberStatus.active) {
+        active++;
+      } else if (status == MemberStatus.expiring) {
+        expiring++;
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        children: [
+          _buildStatItem('ACTIVE', active.toString(), AppColors.active),
+          const SizedBox(width: 10),
+          _buildStatItem('EXPIRING', expiring.toString(), AppColors.expiring),
+          const SizedBox(width: 10),
+          _buildStatItem('TOTAL', all.length.toString(), AppColors.primary),
+        ],
       ),
-      child: Text(
-        isActive ? 'ACTIVE' : 'EXPIRED',
-        style: AppTextStyles.caption.copyWith(
-          color: isActive ? AppColors.green : AppColors.red,
-          fontSize: 8,
+    );
+  }
+
+  Widget _buildStatItem(String label, String value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.elevation2,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: AppTextStyles.sectionTitle.copyWith(color: AppColors.textMuted, fontSize: 8)),
+            const SizedBox(height: 4),
+            Text(value, style: AppTextStyles.h3.copyWith(color: color, fontSize: 18)),
+          ],
         ),
       ),
     );
   }
 
-  String _formatDate(DateTime date) {
-    // Simple format for demo
-    return '${date.day} ${_getMonth(date.month)} ${date.year}';
+  Widget _buildSearchAndFilters(BuildContext context, WidgetRef ref) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Container(
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.elevation2,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: TextField(
+              onChanged: (value) => ref.read(memberSearchQueryProvider.notifier).state = value,
+              style: AppTextStyles.body,
+              decoration: InputDecoration(
+                hintText: 'Search by name or phone...',
+                hintStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted),
+                prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.textMuted),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+        ),
+        _buildPillTabs(ref),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              Text('SORT BY', style: AppTextStyles.sectionTitle.copyWith(fontSize: 8)),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.elevation2,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Row(
+                  children: [
+                    Text('Expiry (Soonest)', style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: AppColors.textMuted),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
-  String _getMonth(int m) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return months[m - 1];
-  }
+  Widget _buildPillTabs(WidgetRef ref) {
+    final all = ref.watch(membersProvider);
+    final selectedTab = ref.watch(memberTabProvider);
+    final now = ref.watch(clockProvider).now;
+    
+    int activeCount = 0;
+    int expiringCount = 0;
+    int expiredCount = 0;
 
-  Widget _buildBottomNav(BuildContext context) {
+    for (final m in all) {
+      final status = m.getStatus(now);
+      if (status == MemberStatus.active) {
+        activeCount++;
+      } else if (status == MemberStatus.expiring) {
+        expiringCount++;
+      } else if (status == MemberStatus.expired) {
+        expiredCount++;
+      }
+    }
+
+    final tabs = [
+      {'label': 'All', 'count': all.length},
+      {'label': 'Active', 'count': activeCount},
+      {'label': 'Expiring', 'count': expiringCount},
+      {'label': 'Expired', 'count': expiredCount},
+    ];
+    
     return Container(
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: AppColors.border)),
+      margin: const EdgeInsets.symmetric(horizontal: 14),
+      height: 40,
+      decoration: BoxDecoration(
+        color: AppColors.elevation1,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
       ),
-      child: BottomNavigationBar(
-        currentIndex: 1,
-        onTap: (index) {
-          switch (index) {
-            case 0: context.go('/dashboard'); break;
-            case 1: context.go('/members'); break;
-            case 2: context.go('/payments'); break;
-            case 3: context.go('/attendance'); break;
-            case 4: context.go('/settings'); break;
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: 'Members'),
-          BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet_outlined), label: 'Payments'),
-          BottomNavigationBarItem(icon: Icon(Icons.fact_check_outlined), label: 'Attendance'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: 'Settings'),
-        ],
+      child: Row(
+        children: List.generate(tabs.length, (index) {
+          final isSelected = selectedTab == index;
+          final tab = tabs[index];
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => ref.read(memberTabProvider.notifier).state = index,
+              child: Container(
+                margin: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  gradient: isSelected ? AppColors.primaryGradient : null,
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      tab['label'] as String,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        color: isSelected ? Colors.white : AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '(${tab['count']})',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w400,
+                        color: isSelected ? Colors.white.withValues(alpha: 0.8) : AppColors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildMemberListContainer(BuildContext context, List<Member> members, WidgetRef ref) {
+    if (members.isEmpty) {
+      return Container(
+        height: 200,
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.people_outline_rounded, size: 48, color: AppColors.textMuted.withValues(alpha: 0.3)),
+            const SizedBox(height: 12),
+            Text('No members found', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: List.generate(members.length, (index) {
+        final m = members[index];
+        final now = ref.watch(clockProvider).now;
+        final statusMsg = _getStatusMessage(m, now);
+        final statusColor = _getStatusColor(m, now);
+        
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: _buildMemberItem(
+            context,
+            m,
+            m.name.isNotEmpty ? m.name.substring(0, 1).toUpperCase() : '?',
+            '${m.planName ?? "N/A"} · Since ${DateFormatter.formatShort(m.joinDate)}',
+            statusMsg,
+            statusColor,
+          ),
+        );
+      }),
+    );
+  }
+
+  String _getStatusMessage(Member m, DateTime now) {
+    final days = m.getDaysRemaining(now);
+    if (days < 0) return 'Expired';
+    if (days == 0) return 'Today';
+    if (days <= 7) return '$days days';
+    return '${days}d';
+  }
+
+  Color _getStatusColor(Member m, DateTime now) {
+    final status = m.getStatus(now);
+    switch (status) {
+      case MemberStatus.active: return AppColors.active;
+      case MemberStatus.expiring: return AppColors.expiring;
+      case MemberStatus.expired: return AppColors.expired;
+      case MemberStatus.pending: return AppColors.textMuted;
+    }
+  }
+
+  Widget _buildMemberItem(BuildContext context, Member member, String initials, String subtitle, String status, Color color) {
+    return GestureDetector(
+      onTap: () => context.push('/gym/member-details/${member.memberId}'),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.elevation2,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [color.withValues(alpha: 0.2), color.withValues(alpha: 0.1)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: color.withValues(alpha: 0.2)),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                initials,
+                style: AppTextStyles.h3.copyWith(fontSize: 16, color: color),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(member.name, style: AppTextStyles.body.copyWith(fontSize: 14, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: AppColors.textMuted)),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: color.withValues(alpha: 0.1)),
+              ),
+              child: Row(
+                children: [
+                  Container(width: 5, height: 5, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+                  const SizedBox(width: 6),
+                  Text(
+                    status,
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: color),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+

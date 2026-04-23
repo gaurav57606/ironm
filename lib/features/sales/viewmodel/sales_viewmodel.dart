@@ -1,0 +1,46 @@
+// ═══════════════════════════════════════════════════════════════════
+// 🔒 LOCKED — SalesViewModel | Verified: 2026-04-24 | DO NOT EDIT
+// ═══════════════════════════════════════════════════════════════════
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
+import '../../../data/models/sale.dart';
+import '../../../data/repositories/sale_repository.dart';
+
+// ── Sales Notifier ──────────────────────────────────────────────────
+class SalesNotifier extends Notifier<void> {
+  @override
+  void build() {}
+
+  Future<void> recordSale({
+    required List<SaleItem> items,
+    required String paymentMethod,
+    required double totalAmount,
+  }) async {
+    final repo = ref.read(saleRepositoryProvider);
+    
+    // 1. Generate invoice number
+    final seq = await repo.getNextInvoiceSequence('SALE');
+    final invoiceNum = seq.nextInvoiceId;
+    seq.nextNumber += 1;
+    await repo.updateInvoiceSequence(seq);
+
+    final sale = Sale(
+      id: const Uuid().v4(),
+      date: DateTime.now(),
+      items: items,
+      totalAmount: totalAmount,
+      paymentMethod: paymentMethod,
+      invoiceNumber: invoiceNum,
+    );
+    await repo.save(sale);
+  }
+}
+
+// Legacy name for compatibility with POSScreen
+final salesProvider = NotifierProvider<SalesNotifier, void>(SalesNotifier.new);
+
+// ── All sales stream ───────────────────────────────────────────────
+final salesStreamProvider = StreamProvider.autoDispose<List<Sale>>((ref) async* {
+  final repo = ref.watch(saleRepositoryProvider);
+  yield await repo.getAll();
+});

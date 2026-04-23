@@ -10,7 +10,7 @@ class PaymentsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgMain,
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
         title: const Text('Payments'),
         actions: [
@@ -45,7 +45,7 @@ class PaymentsScreen extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [AppColors.orange, AppColors.orangeDark],
+          colors: [AppColors.orange, AppColors.orangeD],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -94,7 +94,7 @@ class PaymentsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.green.withOpacity(0.1),
+              color: AppColors.green.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.call_received, color: AppColors.green, size: 18),
@@ -148,3 +148,4 @@ class PaymentsScreen extends StatelessWidget {
     );
   }
 }
+

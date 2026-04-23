@@ -3,8 +3,7 @@ import 'package:isar/isar.dart';
 import '../../core/providers/database_provider.dart';
 import '../../core/services/hmac_service.dart';
 import '../models/member.dart';
-import '../models/domain_event.dart';
-import '../services/snapshot_builder.dart';
+import '../../core/services/snapshot_builder.dart';
 import 'event_repository.dart';
 import 'i_event_repository.dart';
 
@@ -26,7 +25,7 @@ class IsarMemberRepository implements IMemberRepository {
   @override
   Future<List<Member>> getAll() async {
     if (_isar == null) return [];
-    final members = await _isar!.members.where().findAll();
+    final members = await _isar.members.where().findAll();
     final verified = <Member>[];
     for (final m in members) {
       if (await _hmacService.verifyInstance(m)) {
@@ -39,7 +38,7 @@ class IsarMemberRepository implements IMemberRepository {
   @override
   Future<Member?> getById(String memberId) async {
     if (_isar == null) return null;
-    final member = await _isar!.members.where().memberIdEqualTo(memberId).findFirst();
+    final member = await _isar.members.where().memberIdEqualTo(memberId).findFirst();
     if (member != null && await _hmacService.verifyInstance(member)) {
       return member;
     }
@@ -50,16 +49,16 @@ class IsarMemberRepository implements IMemberRepository {
   Future<void> save(Member member) async {
     if (_isar == null) return;
     member.hmacSignature = await _hmacService.signSnapshot(member);
-    await _isar!.writeTxn(() async {
-      await _isar!.members.put(member);
+    await _isar.writeTxn(() async {
+      await _isar.members.put(member);
     });
   }
 
   @override
   Future<void> delete(String memberId) async {
     if (_isar == null) return;
-    await _isar!.writeTxn(() async {
-      await _isar!.members.where().memberIdEqualTo(memberId).deleteAll();
+    await _isar.writeTxn(() async {
+      await _isar.members.where().memberIdEqualTo(memberId).deleteAll();
     });
   }
 

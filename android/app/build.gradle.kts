@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.ironbook_gm"
+    namespace = "com.ironm"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,7 +20,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.ironbook_gm"
+        applicationId = "com.ironm"
         minSdk = 21
         targetSdk = 34
         versionCode = flutter.versionCode

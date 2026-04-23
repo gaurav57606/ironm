@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../data/models/member.dart';
@@ -41,13 +42,15 @@ class _AddMemberScreenState extends ConsumerState<AddMemberScreen> {
   Future<void> _save() async {
     if (_nameController.text.isEmpty) return;
 
-    final member = Member()
-      ..name = _nameController.text
-      ..phone = _phoneController.text
-      ..planName = _selectedPlan
-      ..joinDate = _startDate
-      ..expiryDate = _expiryDate
-      ..isActive = true;
+    final member = Member(
+      memberId: const Uuid().v4(),
+      name: _nameController.text,
+      phone: _phoneController.text,
+      planName: _selectedPlan,
+      joinDate: _startDate,
+      expiryDate: _expiryDate,
+      lastUpdated: DateTime.now(),
+    );
 
     await ref.read(membersViewModelProvider.notifier).addMember(member);
     if (mounted) context.pop();
@@ -56,7 +59,7 @@ class _AddMemberScreenState extends ConsumerState<AddMemberScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgMain,
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
         title: const Text('Add Member'),
         leading: IconButton(
@@ -99,7 +102,7 @@ class _AddMemberScreenState extends ConsumerState<AddMemberScreen> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: AppTextStyles.caption.copyWith(color: AppColors.orange),
+      style: AppTextStyles.subtext.copyWith(color: AppColors.orange),
     );
   }
 
@@ -130,7 +133,7 @@ class _AddMemberScreenState extends ConsumerState<AddMemberScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: AppColors.bgCard,
+            color: AppColors.bg2,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: AppColors.border),
           ),
@@ -138,7 +141,7 @@ class _AddMemberScreenState extends ConsumerState<AddMemberScreen> {
             child: DropdownButton<String>(
               value: _selectedPlan,
               isExpanded: true,
-              dropdownColor: AppColors.bgCard,
+              dropdownColor: AppColors.bg2,
               style: AppTextStyles.body,
               items: items.map((String value) {
                 return DropdownMenuItem<String>(
@@ -179,7 +182,7 @@ class _AddMemberScreenState extends ConsumerState<AddMemberScreen> {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.bgCard,
+              color: AppColors.bg2,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: AppColors.border),
             ),
@@ -187,7 +190,7 @@ class _AddMemberScreenState extends ConsumerState<AddMemberScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(_formatDate(date), style: AppTextStyles.body),
-                const Icon(Icons.calendar_today_outlined, size: 16, color: AppColors.textTertiary),
+                const Icon(Icons.calendar_today_outlined, size: 16, color: AppColors.textMuted),
               ],
             ),
           ),
@@ -206,7 +209,7 @@ class _AddMemberScreenState extends ConsumerState<AddMemberScreen> {
           padding: const EdgeInsets.all(12),
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppColors.bgAccent.withOpacity(0.5),
+            color: AppColors.bg3.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: AppColors.border),
           ),
@@ -225,3 +228,4 @@ class _AddMemberScreenState extends ConsumerState<AddMemberScreen> {
     return months[m - 1];
   }
 }
+

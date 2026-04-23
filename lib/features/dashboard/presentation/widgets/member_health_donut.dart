@@ -34,7 +34,7 @@ class MemberHealthDonut extends StatelessWidget {
             height: 72,
             child: Stack(
               children: [
-                Center(
+                const Center(
                   child: SizedBox(
                     width: 56,
                     height: 56,

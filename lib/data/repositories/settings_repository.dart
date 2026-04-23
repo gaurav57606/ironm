@@ -13,7 +13,7 @@ class IsarSettingsRepository {
 
   Future<OwnerProfile?> getOwner() async {
     if (_isar == null) return null;
-    final owner = await _isar!.ownerProfiles.where().findFirst();
+    final owner = await _isar.ownerProfiles.where().findFirst();
     if (owner != null && await _hmacService.verifyInstance(owner)) {
       return owner;
     }
@@ -23,28 +23,28 @@ class IsarSettingsRepository {
   Future<void> saveOwner(OwnerProfile owner) async {
     if (_isar == null) return;
     owner.hmacSignature = await _hmacService.signSnapshot(owner);
-    await _isar!.writeTxn(() async {
-      await _isar!.ownerProfiles.put(owner);
+    await _isar.writeTxn(() async {
+      await _isar.ownerProfiles.put(owner);
     });
   }
 
   Future<AppSettings> getSettings() async {
     if (_isar == null) return AppSettings();
-    final settings = await _isar!.appSettings.where().findFirst();
+    final settings = await _isar.appSettings.where().findFirst();
     return settings ?? AppSettings();
   }
 
   Future<void> saveSettings(AppSettings settings) async {
     if (_isar == null) return;
-    await _isar!.writeTxn(() async {
-      await _isar!.appSettings.put(settings);
+    await _isar.writeTxn(() async {
+      await _isar.appSettings.put(settings);
     });
   }
 
   Future<void> clearAll() async {
     if (_isar == null) return;
-    await _isar!.writeTxn(() async {
-      await _isar!.clear();
+    await _isar.writeTxn(() async {
+      await _isar.clear();
     });
   }
 }

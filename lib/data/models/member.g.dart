@@ -15,7 +15,7 @@ extension GetMemberCollection on Isar {
 
 const MemberSchema = CollectionSchema(
   name: r'Member',
-  id: -635267144951875,
+  id: -635267144951875289,
   properties: {
     r'age': PropertySchema(
       id: 0,
@@ -121,7 +121,7 @@ const MemberSchema = CollectionSchema(
   idName: r'isarId',
   indexes: {
     r'memberId': IndexSchema(
-      id: 570768963293232,
+      id: 5707689632932325803,
       name: r'memberId',
       unique: true,
       replace: false,
@@ -134,7 +134,7 @@ const MemberSchema = CollectionSchema(
       ],
     ),
     r'name': IndexSchema(
-      id: 879695947855722,
+      id: 879695947855722453,
       name: r'name',
       unique: false,
       replace: false,
@@ -147,7 +147,7 @@ const MemberSchema = CollectionSchema(
       ],
     ),
     r'phone': IndexSchema(
-      id: -630809832415755,
+      id: -6308098324157559207,
       name: r'phone',
       unique: false,
       replace: false,
@@ -160,7 +160,7 @@ const MemberSchema = CollectionSchema(
       ],
     ),
     r'archived': IndexSchema(
-      id: 168408877423657,
+      id: 1684088774236579907,
       name: r'archived',
       unique: false,
       replace: false,
@@ -3585,7 +3585,7 @@ extension MemberQueryProperty on QueryBuilder<Member, Member, QQueryProperty> {
 
 const JoinDateChangeSchema = Schema(
   name: r'JoinDateChange',
-  id: 535333409093517,
+  id: 5353334090935177677,
   properties: {
     r'changedAt': PropertySchema(
       id: 0,

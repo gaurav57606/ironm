@@ -27,7 +27,8 @@ class AppBottomNavBar extends StatelessWidget {
           _buildNavItem(1, Icons.people_rounded, 'Members'),
           _buildFab(context),
           _buildNavItem(2, Icons.description_rounded, 'POS'),
-          _buildNavItem(3, Icons.calendar_today_rounded, 'Attendance'),
+          _buildNavItem(6, Icons.settings_rounded, 'Settings'),
+
         ],
       ),
     );
@@ -80,7 +81,7 @@ class AppBottomNavBar extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.orange.withOpacity(0.3),
+                  color: AppColors.orange.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),

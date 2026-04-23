@@ -1,14 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ironbook_gm/features/dashboard/viewmodel/dashboard_viewmodel.dart';
-import 'package:ironbook_gm/data/repositories/member_repository.dart';
-import 'package:ironbook_gm/data/repositories/payment_repository.dart';
-import 'package:ironbook_gm/data/models/member.dart';
-import 'package:ironbook_gm/data/models/payment.dart';
+import 'package:ironm/features/dashboard/viewmodel/dashboard_viewmodel.dart';
+import 'package:ironm/data/repositories/member_repository.dart';
+import 'package:ironm/data/repositories/payment_repository.dart';
+import 'package:ironm/data/models/member.dart';
+import 'package:ironm/data/models/payment.dart';
 
-class MockMemberRepository extends Mock implements MemberRepository {}
-class MockPaymentRepository extends Mock implements PaymentRepository {}
+class MockMemberRepository extends Mock implements IMemberRepository {}
+class MockPaymentRepository extends Mock implements IsarPaymentRepository {}
 
 void main() {
   late MockMemberRepository mockMemberRepo;
@@ -32,72 +32,114 @@ void main() {
 
   group('DashboardViewModel Detailed Analysis', () {
     test('Initial state is loading', () {
-      final state = container.read(dashboardViewModelProvider);
+      final state = container.read(dashboardStatsProvider);
       expect(state is AsyncLoading, true);
     });
 
     test('Calculates stats correctly with multiple members and payments', () async {
       // Mock Data
       final members = [
-        Member()
-          ..name = 'Active John'
-          ..isActive = true
-          ..expiryDate = DateTime.now().add(const Duration(days: 10)),
-        Member()
-          ..name = 'Expiring Jane'
-          ..isActive = true
-          ..expiryDate = DateTime.now().add(const Duration(days: 3)),
-        Member()
-          ..name = 'Inactive Bob'
-          ..isActive = false
-          ..expiryDate = DateTime.now().subtract(const Duration(days: 1)),
+        Member(
+          memberId: '1',
+          name: 'Active John',
+          joinDate: DateTime.now(),
+          expiryDate: DateTime.now().add(const Duration(days: 10)),
+          lastUpdated: DateTime.now(),
+        ),
+        Member(
+          memberId: '2',
+          name: 'Expiring Jane',
+          joinDate: DateTime.now(),
+          expiryDate: DateTime.now().add(const Duration(days: 3)),
+          lastUpdated: DateTime.now(),
+        ),
+        Member(
+          memberId: '3',
+          name: 'Inactive Bob',
+          joinDate: DateTime.now(),
+          expiryDate: DateTime.now().subtract(const Duration(days: 1)),
+          lastUpdated: DateTime.now(),
+        ),
       ];
 
       final payments = [
-        Payment()
-          ..amount = 1000.0
-          ..paymentDate = DateTime.now(),
-        Payment()
-          ..amount = 500.0
-          ..paymentDate = DateTime.now(),
-        Payment()
-          ..amount = 2000.0
-          ..paymentDate = DateTime.now().subtract(const Duration(days: 45)), // Last month
+        Payment(
+          id: 'p1',
+          memberId: '1',
+          amount: 1000.0,
+          date: DateTime.now(),
+          method: 'Cash',
+          planId: 'plan1',
+          planName: 'Monthly',
+          invoiceNumber: 'INV-001',
+          subtotal: 847.46,
+          gstAmount: 152.54,
+          gstRate: 18.0,
+          durationMonths: 1,
+        ),
+        Payment(
+          id: 'p2',
+          memberId: '2',
+          amount: 500.0,
+          date: DateTime.now(),
+          method: 'UPI',
+          planId: 'plan1',
+          planName: 'Monthly',
+          invoiceNumber: 'INV-002',
+          subtotal: 423.73,
+          gstAmount: 76.27,
+          gstRate: 18.0,
+          durationMonths: 1,
+        ),
+        Payment(
+          id: 'p3',
+          memberId: '1',
+          amount: 2000.0,
+          date: DateTime.now().subtract(const Duration(days: 45)), // Last month
+          method: 'Cash',
+          planId: 'plan1',
+          planName: 'Monthly',
+          invoiceNumber: 'INV-003',
+          subtotal: 1694.92,
+          gstAmount: 305.08,
+          gstRate: 18.0,
+          durationMonths: 1,
+        ),
       ];
 
-      when(() => mockMemberRepo.getAllMembers()).thenAnswer((_) async => members);
-      when(() => mockPaymentRepo.getAllPayments()).thenAnswer((_) async => payments);
+      when(() => mockMemberRepo.getAll()).thenAnswer((_) async => members);
+      when(() => mockPaymentRepo.getAll()).thenAnswer((_) async => payments);
 
       // Trigger build
-      final state = await container.read(dashboardViewModelProvider.future);
+      final state = await container.read(dashboardStatsProvider.future);
 
       expect(state.totalMembers, 3);
-      expect(state.activeMembers, 2);
-      expect(state.expiringSoon, 1); // Only Jane
+      expect(state.activeMembers, 1); // Only John is active
+      expect(state.expiringMembers, 1); // Only Jane
       expect(state.monthlyRevenue, 1500.0); // Only current month payments
     });
 
     test('Handles empty data gracefully', () async {
-      when(() => mockMemberRepo.getAllMembers()).thenAnswer((_) async => []);
-      when(() => mockPaymentRepo.getAllPayments()).thenAnswer((_) async => []);
+      when(() => mockMemberRepo.getAll()).thenAnswer((_) async => []);
+      when(() => mockPaymentRepo.getAll()).thenAnswer((_) async => []);
 
-      final state = await container.read(dashboardViewModelProvider.future);
+      final state = await container.read(dashboardStatsProvider.future);
 
       expect(state.totalMembers, 0);
       expect(state.activeMembers, 0);
-      expect(state.expiringSoon, 0);
+      expect(state.expiringMembers, 0);
       expect(state.monthlyRevenue, 0.0);
     });
 
     test('Handles repository errors', () async {
-      when(() => mockMemberRepo.getAllMembers()).thenThrow(Exception('Database error'));
+      when(() => mockMemberRepo.getAll()).thenThrow(Exception('Database error'));
       
       // Wait for the future to complete and catch the error
       try {
-        await container.read(dashboardViewModelProvider.future);
+        await container.read(dashboardStatsProvider.future);
       } catch (_) {}
 
-      final finalState = container.read(dashboardViewModelProvider);
+      final finalState = container.read(dashboardStatsProvider);
       expect(finalState is AsyncError, true);
     });
   });

@@ -13,7 +13,7 @@ class IsarPaymentRepository {
 
   Future<List<Payment>> getAll() async {
     if (_isar == null) return [];
-    final payments = await _isar!.payments.where().sortByDateDesc().findAll();
+    final payments = await _isar.payments.where().sortByDateDesc().findAll();
     final verified = <Payment>[];
     for (final p in payments) {
       if (await _hmacService.verifyInstance(p)) {
@@ -26,18 +26,18 @@ class IsarPaymentRepository {
   Future<void> save(Payment payment) async {
     if (_isar == null) return;
     payment.hmacSignature = await _hmacService.signSnapshot(payment);
-    await _isar!.writeTxn(() async {
-      await _isar!.payments.put(payment);
+    await _isar.writeTxn(() async {
+      await _isar.payments.put(payment);
     });
   }
 
   Future<InvoiceSequence> getNextInvoiceSequence(String prefix) async {
     if (_isar == null) return InvoiceSequence(prefix: prefix);
-    var sequence = await _isar!.invoiceSequences.where().prefixEqualTo(prefix).findFirst();
+    var sequence = await _isar.invoiceSequences.where().prefixEqualTo(prefix).findFirst();
     if (sequence == null) {
       sequence = InvoiceSequence(prefix: prefix);
-      await _isar!.writeTxn(() async {
-        await _isar!.invoiceSequences.put(sequence!);
+      await _isar.writeTxn(() async {
+        await _isar.invoiceSequences.put(sequence!);
       });
     }
     return sequence;
@@ -45,8 +45,8 @@ class IsarPaymentRepository {
 
   Future<void> updateInvoiceSequence(InvoiceSequence sequence) async {
     if (_isar == null) return;
-    await _isar!.writeTxn(() async {
-      await _isar!.invoiceSequences.put(sequence);
+    await _isar.writeTxn(() async {
+      await _isar.invoiceSequences.put(sequence);
     });
   }
 }

@@ -1,142 +1,200 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../shared/widgets/status_bar_wrapper.dart';
+import '../../../features/auth/viewmodel/auth_viewmodel.dart';
 
-// 🔒 LOCKED SCREEN — SettingsScreen
-class SettingsScreen extends StatelessWidget {
+
+
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bgMain,
-      appBar: AppBar(title: const Text('Settings')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildProfileSection(),
-            const SizedBox(height: 32),
-            _buildSection('Gym Configuration', [
-              _buildSettingTile('Subscription Plans', Icons.fitness_center_outlined, 'Manage your plans'),
-              _buildSettingTile('GST Settings', Icons.receipt_long_outlined, 'Configure taxes'),
-            ]),
-            const SizedBox(height: 24),
-            _buildSection('Security', [
-              _buildSettingTile('Change PIN', Icons.lock_outline, 'Update your entry PIN'),
-              _buildSettingTile('Biometrics', Icons.fingerprint, 'Face ID / Fingerprint'),
-            ]),
-            const SizedBox(height: 24),
-            _buildSection('System', [
-              _buildSettingTile('Backup Data', Icons.cloud_upload_outlined, 'Sync to cloud'),
-              _buildSettingTile('Restore Data', Icons.cloud_download_outlined, 'Download history'),
-            ]),
-            const SizedBox(height: 48),
-            Center(
-              child: TextButton(
-                onPressed: () => context.go('/login'),
-                child: const Text('Log Out', style: TextStyle(color: AppColors.red)),
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      decoration: const BoxDecoration(color: AppColors.bg),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: StatusBarWrapper(
+          child: Column(
+            children: [
+              _buildHeader(context),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  children: [
+                    _buildSectionHeader('General'),
+                    _buildSettingsItem(Icons.person_outline_rounded, 'Account Settings', 'Manage your gym profile', () {}),
+                    _buildSettingsItem(Icons.card_membership_rounded, 'Membership Plans', 'Manage plans & pricing', () => context.push('/settings/plans')),
+                    _buildSettingsItem(Icons.notifications_none_rounded, 'Notifications', 'Expiry alerts & reminders', () {}),
+                    _buildSettingsItem(Icons.sync_rounded, 'Data Synchronization', 'Sync with cloud (Last sync: 2h ago)', () {}),
+                    _buildSettingsToggle(Icons.dark_mode_outlined, 'Dark Mode', 'System default enabled', true),
+                    
+                    _buildSectionHeader('System'),
+                    _buildSettingsItem(Icons.cloud_upload_outlined, 'Backup & Restore', 'Keep your data safe', () => context.push('/settings/backup-restore')),
+                    _buildSettingsItem(Icons.security_rounded, 'Security & PIN', 'Biometric & PIN lock', () {}),
+                    _buildSettingsItem(Icons.language_rounded, 'Language', 'English (IN)', () {}),
+                    
+                    _buildSectionHeader('About'),
+                    _buildSettingsItem(Icons.info_outline_rounded, 'App Version', 'v1.4.2 (Production)', null),
+                    _buildSettingsItem(Icons.help_outline_rounded, 'Help & Support', 'Contact IronBook team', () {}),
+                    
+                    const SizedBox(height: 20),
+                    _buildLogoutButton(ref),
+                    const SizedBox(height: 40),
+                  ],
+                ),
               ),
-            ),
-            Center(
-              child: Text('IronBook GM v1.0.0', style: AppTextStyles.subtext),
-            ),
-            const SizedBox(height: 32),
-          ],
+            ],
+          ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(context),
     );
   }
 
-  Widget _buildProfileSection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.bgCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
+  Widget _buildHeader(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
       child: Row(
         children: [
+          _buildIconButton(Icons.chevron_left, () => context.pop()),
+          const SizedBox(width: 12),
+          Text('Settings', style: AppTextStyles.h2.copyWith(fontSize: 20)),
+          const Spacer(),
           Container(
-            width: 52,
-            height: 52,
-            decoration: const BoxDecoration(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
               color: AppColors.orange,
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(11),
             ),
-            child: const Icon(Icons.person_outline, color: Colors.white),
+            alignment: Alignment.center,
+            child: const Text('R', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Raj\'s Fitness', style: AppTextStyles.title),
-                Text('Owner: Rajesh Kumar', style: AppTextStyles.subtext),
-              ],
-            ),
-          ),
-          const Icon(Icons.chevron_right, color: AppColors.textTertiary),
         ],
       ),
     );
   }
 
-  Widget _buildSection(String title, List<Widget> children) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: AppTextStyles.caption.copyWith(color: AppColors.orange)),
-        const SizedBox(height: 12),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.bgCard,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Column(children: children),
+  Widget _buildIconButton(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: AppColors.bg3,
+          borderRadius: BorderRadius.circular(9),
+          border: Border.all(color: AppColors.border),
         ),
-      ],
-    );
-  }
-
-  Widget _buildSettingTile(String title, IconData icon, String subtitle) {
-    return ListTile(
-      leading: Icon(icon, color: AppColors.textSecondary, size: 20),
-      title: Text(title, style: AppTextStyles.body),
-      subtitle: Text(subtitle, style: AppTextStyles.subtext),
-      trailing: const Icon(Icons.chevron_right, size: 16, color: AppColors.textTertiary),
-    );
-  }
-
-  Widget _buildBottomNav(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: AppColors.border)),
+        alignment: Alignment.center,
+        child: Icon(icon, size: 16, color: AppColors.textPrimary),
       ),
-      child: BottomNavigationBar(
-        currentIndex: 4,
-        onTap: (index) {
-          switch (index) {
-            case 0: context.go('/dashboard'); break;
-            case 1: context.go('/members'); break;
-            case 2: context.go('/payments'); break;
-            case 3: context.go('/attendance'); break;
-            case 4: context.go('/settings'); break;
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.people_outline), label: 'Members'),
-          BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet_outlined), label: 'Payments'),
-          BottomNavigationBarItem(icon: Icon(Icons.fact_check_outlined), label: 'Attendance'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: 'Settings'),
-        ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(6, 20, 6, 8),
+      child: Text(
+        title.toUpperCase(),
+        style: AppTextStyles.label.copyWith(
+          fontSize: 9,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textSecondary,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsItem(IconData icon, String title, String subtitle, VoidCallback? onTap) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 6),
+      decoration: BoxDecoration(
+        color: AppColors.bg3,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: ListTile(
+        onTap: onTap,
+        dense: true,
+        leading: Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: AppColors.bg4,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          alignment: Alignment.center,
+          child: Icon(icon, size: 16, color: AppColors.orange),
+        ),
+        title: Text(title, style: AppTextStyles.body.copyWith(fontSize: 12, fontWeight: FontWeight.w600)),
+        subtitle: Text(subtitle, style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.textMuted)),
+        trailing: onTap != null ? const Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.textMuted) : null,
+      ),
+    );
+  }
+
+  Widget _buildSettingsToggle(IconData icon, String title, String subtitle, bool value) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 6),
+      decoration: BoxDecoration(
+        color: AppColors.bg3,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: ListTile(
+        dense: true,
+        leading: Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: AppColors.bg4,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          alignment: Alignment.center,
+          child: Icon(icon, size: 16, color: AppColors.orange),
+        ),
+        title: Text(title, style: AppTextStyles.body.copyWith(fontSize: 12, fontWeight: FontWeight.w600)),
+        subtitle: Text(subtitle, style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.textMuted)),
+        trailing: Switch(
+          value: value,
+          onChanged: (v) {},
+          activeColor: AppColors.orange,
+          activeTrackColor: AppColors.orange.withValues(alpha: 0.2),
+          inactiveThumbColor: AppColors.textMuted,
+          inactiveTrackColor: AppColors.bg4,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton(WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: () => ref.read(authProvider.notifier).logout(),
+          icon: const Icon(Icons.logout_rounded, size: 14),
+          label: const Text('Log Out'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.expired.withValues(alpha: 0.1),
+            foregroundColor: AppColors.expired,
+            padding: const EdgeInsets.symmetric(vertical: 11),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: AppColors.expired.withValues(alpha: 0.2)),
+            ),
+            elevation: 0,
+            textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+          ),
+        ),
       ),
     );
   }
 }
+

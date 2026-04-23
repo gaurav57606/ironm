@@ -4,12 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:collection/collection.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
-import '../../../shared/widgets/app_bottom_nav.dart';
 import '../../../shared/widgets/status_bar_wrapper.dart';
-import '../../../data/notifiers/attendance_notifier.dart';
-import '../../../data/notifiers/members_notifier.dart';
+import '../viewmodel/attendance_viewmodel.dart';
+import '../../members/viewmodel/members_viewmodel.dart';
 import '../../../data/models/attendance.dart';
-import '../../../core/utils/date_utils.dart';
 
 class AttendanceScreen extends ConsumerWidget {
   const AttendanceScreen({super.key});
@@ -32,24 +30,20 @@ class AttendanceScreen extends ConsumerWidget {
                 child: attendance.isEmpty
                     ? _buildEmptyState()
                     : ListView.separated(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
                         itemCount: attendance.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 8),
                         itemBuilder: (ctx, i) {
                           final record = attendance[i];
-                          final member = members.firstWhereOrNull((m) => m.memberId == record.memberId);
+                          final member = members.firstWhereOrNull(
+                              (m) => m.memberId == record.memberId);
                           return _buildAttendanceTile(record, member);
                         },
                       ),
               ),
             ],
           ),
-        ),
-        bottomNavigationBar: AppBottomNavBar(
-          currentIndex: 3, // Attendance
-          onTap: (index) {
-            // Navigation handled by router
-          },
         ),
       ),
     );
@@ -99,14 +93,15 @@ class AttendanceScreen extends ConsumerWidget {
             decoration: BoxDecoration(
               color: isSelected ? AppColors.orange : AppColors.bg3,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: isSelected ? AppColors.orange : AppColors.border),
+              border: Border.all(
+                  color: isSelected ? AppColors.orange : AppColors.border),
             ),
             child: Column(
               children: [
                 Text(
                   ['M', 'T', 'W', 'T', 'F', 'S', 'S'][index],
                   style: TextStyle(
-                    fontSize: 7, 
+                    fontSize: 7,
                     fontWeight: FontWeight.w700,
                     color: isSelected ? Colors.white : AppColors.textMuted,
                   ),
@@ -133,9 +128,11 @@ class AttendanceScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.fact_check_rounded, size: 48, color: AppColors.textMuted.withOpacity(0.3)),
+          Icon(Icons.fact_check_rounded,
+              size: 48, color: AppColors.textMuted.withValues(alpha: 0.3)),
           const SizedBox(height: 12),
-          Text('No attendance records found', style: AppTextStyles.label.copyWith(color: AppColors.textMuted)),
+          Text('No attendance records found',
+              style: AppTextStyles.label.copyWith(color: AppColors.textMuted)),
         ],
       ),
     );
@@ -155,13 +152,16 @@ class AttendanceScreen extends ConsumerWidget {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: AppColors.orange.withOpacity(0.1),
+              color: AppColors.orange.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             alignment: Alignment.center,
             child: Text(
               (member?.name ?? '?').substring(0, 1).toUpperCase(),
-              style: const TextStyle(color: AppColors.orange, fontWeight: FontWeight.w700, fontSize: 13),
+              style: const TextStyle(
+                  color: AppColors.orange,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13),
             ),
           ),
           const SizedBox(width: 10),
@@ -169,10 +169,13 @@ class AttendanceScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(member?.name ?? 'Unknown Member', style: AppTextStyles.body.copyWith(fontSize: 12, fontWeight: FontWeight.w600)),
+                Text(member?.name ?? 'Unknown Member',
+                    style: AppTextStyles.body
+                        .copyWith(fontSize: 12, fontWeight: FontWeight.w600)),
                 Text(
                   'Checked in at 06:42 AM', // Mocking check in time
-                  style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.textMuted),
+                  style: AppTextStyles.label
+                      .copyWith(fontSize: 9, color: AppColors.textMuted),
                 ),
               ],
             ),
@@ -187,20 +190,28 @@ class AttendanceScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(width: 4, height: 4, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+          Container(
+              width: 4,
+              height: 4,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
           const SizedBox(width: 4),
           Text(
             label,
-            style: TextStyle(fontSize: 8, fontWeight: FontWeight.w800, color: color, letterSpacing: 0.5),
+            style: TextStyle(
+                fontSize: 8,
+                fontWeight: FontWeight.w800,
+                color: color,
+                letterSpacing: 0.5),
           ),
         ],
       ),
     );
   }
 }
+

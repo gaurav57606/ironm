@@ -1,82 +1,87 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../shared/widgets/app_button.dart';
+import '../../../shared/widgets/app_text_field.dart';
+import '../../../shared/widgets/status_bar_wrapper.dart';
+import '../viewmodel/auth_viewmodel.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    setState(() => _isLoading = true);
+    try {
+      final success = await ref.read(authProvider.notifier).login(
+            _emailController.text,
+            _passwordController.text,
+          );
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+        if (success) {
+          context.go('/dashboard');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Login failed. Please check your credentials.'),
+              backgroundColor: AppColors.expired,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: AppColors.expired,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bgMain,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: AppColors.orange,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    'IG',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text('Welcome back', style: AppTextStyles.h2),
-                const SizedBox(height: 4),
-                Text(
-                  'Log in to your gym account',
-                  style: AppTextStyles.label,
-                ),
-                const SizedBox(height: 32),
-                _buildField('Email Address', 'raj@rajsfitness.com'),
-                _buildField('Password', '••••••••', obscure: true),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => context.go('/forgot-password'),
-                    child: const Text(
-                      'Forgot password?',
-                      style: TextStyle(color: AppColors.orange, fontSize: 10),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ElevatedButton(
-                  onPressed: () => context.go('/pin-entry'),
-                  child: const Text('Log In'),
-                ),
-                const SizedBox(height: 16),
-                GestureDetector(
-                  onTap: () => context.go('/signup'),
-                  child: RichText(
-                    text: TextSpan(
-                      style: AppTextStyles.label,
-                      children: [
-                        const TextSpan(text: 'New here? '),
-                        TextSpan(
-                          text: 'Create an account',
-                          style: const TextStyle(color: AppColors.orange),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-              ],
+    return StatusBarWrapper(
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: AppColors.backgroundGradient,
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildHeader(),
+                  const SizedBox(height: 48),
+                  _buildLoginForm(context),
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
           ),
         ),
@@ -84,24 +89,112 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildField(String label, String hint, {bool obscure = false}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
-          const SizedBox(height: 6),
-          TextField(
-            obscureText: obscure,
-            style: AppTextStyles.body,
-            decoration: InputDecoration(
-              hintText: hint,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  Widget _buildHeader() {
+    return Column(
+      children: [
+        Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+            gradient: AppColors.primaryGradient,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          alignment: Alignment.center,
+          child: const Text(
+            'IG',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: -1,
             ),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 32),
+        Text(
+          'Welcome Back',
+          style: AppTextStyles.h1.copyWith(fontSize: 28),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Log in to your gym account',
+          style: AppTextStyles.body.copyWith(
+            color: AppColors.textSecondary,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoginForm(BuildContext context) {
+    return Column(
+      children: [
+        AppTextField(
+          label: 'Email Address',
+          hint: 'raj@rajsfitness.com',
+          controller: _emailController,
+          keyboardType: TextInputType.emailAddress,
+        ),
+        const SizedBox(height: 8),
+        AppTextField(
+          label: 'Password',
+          hint: '••••••••',
+          controller: _passwordController,
+          isPassword: true,
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () => context.push('/forgot-password'),
+            style: TextButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+            ),
+            child: Text(
+              'Forgot password?',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        AppButton(
+          text: _isLoading ? 'Logging In...' : 'Log In',
+          onPressed: _isLoading ? null : _handleLogin,
+        ),
+        const SizedBox(height: 24),
+        GestureDetector(
+          onTap: () => context.go('/signup'),
+          child: RichText(
+            text: TextSpan(
+              style: AppTextStyles.body.copyWith(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
+              children: const [
+                TextSpan(text: 'New here? '),
+                TextSpan(
+                  text: 'Create an account',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
+

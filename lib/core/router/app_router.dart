@@ -1,23 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/notifiers/auth_notifier.dart';
-import '../../features/home/presentation/widgets/main_shell.dart';
-import '../../features/home/presentation/screens/dashboard_screen.dart';
-import '../../features/members/presentation/screens/members_list_screen.dart';
-import '../../features/members/presentation/screens/quick_add_member_screen.dart';
-import '../../features/members/presentation/screens/member_detail_screen.dart';
-import '../../features/nutrition/presentation/screens/nutrition_screen.dart';
-import '../../features/analytics/presentation/screens/analytics_screen.dart';
-import '../../features/settings/presentation/screens/settings_screen.dart';
-import '../../features/billing/presentation/screens/pos_screen.dart';
-import '../../features/auth/presentation/screens/login_screen.dart';
-import '../../features/auth/presentation/screens/onboarding_screen.dart';
-import '../../features/auth/presentation/screens/pin_setup_screen.dart';
-import '../../features/auth/presentation/screens/pin_entry_screen.dart';
-import '../../features/notifications/presentation/screens/notifications_hub_screen.dart';
+import '../../features/auth/viewmodel/auth_viewmodel.dart';
+import '../../shared/widgets/main_shell.dart';
+
+
+import '../../features/dashboard/presentation/dashboard_screen.dart';
+import '../../features/members/presentation/members_list_screen.dart';
+import '../../features/members/presentation/quick_add_member_screen.dart';
+import '../../features/members/presentation/member_detail_screen.dart';
+import '../../features/analytics/presentation/analytics_screen.dart';
+import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/settings/presentation/backup_restore_screen.dart';
+import '../../features/billing/presentation/pos_screen.dart';
+
+import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/signup_screen.dart';
+import '../../features/auth/presentation/onboarding_screen.dart';
+import '../../features/auth/presentation/pin_setup_screen.dart';
+import '../../features/auth/presentation/pin_entry_screen.dart';
+import '../../features/auth/presentation/forgot_password_screen.dart';
+import '../../features/notifications/presentation/notifications_screen.dart';
+
 import '../../features/attendance/presentation/attendance_screen.dart';
-import '../../features/billing/presentation/screens/invoice_screen.dart';
+import '../../features/billing/presentation/invoice_screen.dart';
+import '../../features/plans/presentation/plans_screen.dart';
 
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -41,11 +48,14 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       if (isFirstLaunch && !isOnboarding) return '/onboarding';
       if (!isAuth && !isLoggingIn && !isOnboarding) return '/login';
-      
+
       if (isAuth) {
         if (!isPinSetup && !isPinSetupPath) return '/setup-pin';
         if (isPinSetup && !unlocked && !isPinEntryPath) return '/unlock';
-        if ((isLoggingIn || isOnboarding || state.matchedLocation == '/') && unlocked) return '/dashboard';
+        if ((isLoggingIn || isOnboarding || state.matchedLocation == '/') &&
+            unlocked) {
+          return '/dashboard';
+        }
       }
 
       return null;
@@ -53,7 +63,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => const Scaffold(body: Center(child: CircularProgressIndicator())),
+        builder: (context, state) =>
+            const Scaffold(body: Center(child: CircularProgressIndicator())),
       ),
       GoRoute(
         path: '/onboarding',
@@ -79,10 +90,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
-      GoRoute(
-        path: '/gamification',
-        builder: (context, state) => const GamificationScreen(),
-      ),
+
+
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainShell(navigationShell: navigationShell);
@@ -117,7 +126,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                         path: 'invoice',
                         builder: (context, state) {
                           final memberId = state.pathParameters['memberId'];
-                          return InvoiceScreen(memberId: memberId);
+                          return InvoiceScreen(memberId: memberId ?? '');
                         },
                       ),
                     ],
@@ -126,14 +135,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/nutrition',
-                builder: (context, state) => const NutritionScreen(),
-              ),
-            ],
-          ),
+
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -162,8 +164,9 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/notifications',
-                builder: (context, state) => const NotificationsHubScreen(),
+                builder: (context, state) => const NotificationsScreen(),
               ),
+
             ],
           ),
           StatefulShellBranch(
@@ -171,10 +174,19 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/settings',
                 builder: (context, state) => const SettingsScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'backup-restore',
+                    builder: (context, state) => const BackupRestoreScreen(),
+                  ),
+                  GoRoute(
+                    path: 'plans',
+                    builder: (context, state) => const PlansScreen(),
+                  ),
+                ],
               ),
             ],
           ),
-
         ],
       ),
     ],

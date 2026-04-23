@@ -7,7 +7,10 @@ abstract class IAttendanceRepository {
   Future<List<Attendance>> getByMember(String memberId);
   Future<void> save(Attendance attendance);
   Future<List<Attendance>> getAll();
+  Stream<List<Attendance>> watchAll();
+  Stream<List<Attendance>> watchMember(String memberId);
 }
+
 
 class IsarAttendanceRepository implements IAttendanceRepository {
   final Isar? _isar;
@@ -17,23 +20,36 @@ class IsarAttendanceRepository implements IAttendanceRepository {
   @override
   Future<List<Attendance>> getByMember(String memberId) async {
     if (_isar == null) return [];
-    return await _isar!.attendances.where().memberIdEqualTo(memberId).sortByCheckInTimeDesc().findAll();
+    return await _isar.attendances.where().memberIdEqualTo(memberId).sortByCheckInTimeDesc().findAll();
   }
 
   @override
   Future<void> save(Attendance attendance) async {
     if (_isar == null) return;
-    await _isar!.writeTxn(() async {
-      await _isar!.attendances.put(attendance);
+    await _isar.writeTxn(() async {
+      await _isar.attendances.put(attendance);
     });
   }
 
   @override
   Future<List<Attendance>> getAll() async {
     if (_isar == null) return [];
-    return await _isar!.attendances.where().sortByCheckInTimeDesc().findAll();
+    return await _isar.attendances.where().sortByCheckInTimeDesc().findAll();
+  }
+
+  @override
+  Stream<List<Attendance>> watchAll() {
+    if (_isar == null) return const Stream.empty();
+    return _isar.attendances.where().sortByCheckInTimeDesc().watch(fireImmediately: true);
+  }
+
+  @override
+  Stream<List<Attendance>> watchMember(String memberId) {
+    if (_isar == null) return const Stream.empty();
+    return _isar.attendances.where().memberIdEqualTo(memberId).sortByCheckInTimeDesc().watch(fireImmediately: true);
   }
 }
+
 
 final attendanceRepositoryProvider = Provider<IAttendanceRepository>((ref) {
   final isar = ref.watch(isarProvider);
