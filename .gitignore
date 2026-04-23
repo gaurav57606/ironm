@@ -104,3 +104,8 @@ web_build_output.txt
 *.hive
 *.lock
 
+
+# Security
+.env
+*.env
+.env.*
