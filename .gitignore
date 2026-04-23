@@ -1,0 +1,106 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Keystore and keys
+/ironbook_release.jks
+/android/key.properties
+
+# Android build artifacts
+android/app/build/
+android/.gradle/
+android/gradle_build.txt
+
+# Web build artifacts
+web_dist/
+build_output.txt
+
+# Log files and others
+analysis_*.txt
+port.txt
+
+# Android more
+android/.kotlin/
+android/app/build/
+android/.gradle/
+android/gradle_build.txt
+android/app/src/debug/res/xml/
+android/app/src/main/res/xml/
+android/app/src/profile/res/xml/
+**/google-services.json
+**/firebase_options.dart
+
+# IronBook Storage & Logs
+*.hive
+*.lock
+*_log.txt
+test_output.txt
+test_output_utf8.txt
+test_results.txt
+test_results_utf8.txt
+web_build_output.txt
+view.xml
+test_hive/
+build_log.txt
+build_log_utf8.txt
+status_full.txt
+status_full_utf8.txt
+findings.md
+initial_logcat.txt
+initial_screen.png
+gradle_full_retry.txt
+initial_logcat_utf8.txt
+build_error_full.txt
+retry3_log.txt
+server_log.txt
+view.xml
+test_results.txt
+test_results_utf8.txt
+test_output.txt
+test_output_utf8.txt
+web_build_output.txt
+*.hive
+*.lock
+

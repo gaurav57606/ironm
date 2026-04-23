@@ -1,0 +1,19 @@
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../data/models/attendance.dart';
+import '../../../data/repositories/attendance_repository.dart';
+
+part 'attendance_viewmodel.g.dart';
+
+@riverpod
+class AttendanceViewModel extends _$AttendanceViewModel {
+  @override
+  Stream<List<Attendance>> build() {
+    final repo = ref.watch(attendanceRepositoryProvider);
+    return repo.watchAllAttendance();
+  }
+
+  Future<void> markAttendance(Attendance attendance) async {
+    final repo = ref.read(attendanceRepositoryProvider);
+    await repo.markAttendance(attendance);
+  }
+}

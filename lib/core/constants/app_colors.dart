@@ -1,0 +1,58 @@
+import 'package:flutter/material.dart';
+
+class AppColors {
+  // Backgrounds
+  static const Color bg          = Color(0xFF0C0C0E);  // --bg
+  static const Color bg2         = Color(0xFF141417);  // --bg2
+  static const Color bg3         = Color(0xFF1C1C21);  // --bg3
+  static const Color bg4         = Color(0xFF242429);  // --bg4
+
+  // Brand
+  static const Color primary     = Color(0xFFFF6B2B);  // --orange
+  static const Color primaryDim  = Color(0xFFCC4A15);  // --orangeD
+  static const Color orange      = Color(0xFFFF6B2B);  
+  static const Color orangeD     = Color(0xFFCC4A15);  
+
+  // Semantic
+  static const Color active      = Color(0xFF22C55E);  // --green
+  static const Color success     = active;             
+  static const Color expiring    = Color(0xFFF59E0B);  // --amber
+  static const Color expired     = Color(0xFFEF4444);  // --red
+  static const Color error       = Color(0xFFEF4444);  
+  static const Color warning     = Color(0xFFF59E0B);  
+  static const Color blue        = Color(0xFF3B82F6);  
+
+  // Text
+  static const Color textPrimary    = Color(0xFFF0EEF6);  // --text
+  static const Color textSecondary  = Color(0xFF9896A4);  // --text2
+  static const Color textMuted      = Color(0xFF5C5A67);  // --text3
+
+  // UI
+  static const Color border      = Color(0xFF2A2A30);  // --border
+  static const Color divider     = Color(0xFF1C1C21);
+
+  // Gradients
+  static const LinearGradient primaryGradient = LinearGradient(
+    colors: [primary, Color(0xFFFF922B)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient surfaceGradient = LinearGradient(
+    colors: [Color(0xFF2C2C34), Color(0xFF1C1C21)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient backgroundGradient = LinearGradient(
+    colors: [bg, Color(0xFF141417)],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  // Elevation Colors
+  static const Color elevation1 = Color(0xFF141417);
+  static const Color elevation2 = Color(0xFF1C1C21);
+  static const Color elevation3 = Color(0xFF242429);
+  static const Color elevation4 = Color(0xFF2C2C34);
+}

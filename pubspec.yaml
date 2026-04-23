@@ -1,0 +1,59 @@
+name: ironbook_gm
+description: Gym Management App for solo gym owners
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management — lightweight, no boilerplate
+  riverpod: ^2.5.1
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Navigation
+  go_router: ^13.2.0
+
+  # Local Database — lightweight, pure Dart, no native code
+  isar: ^3.1.0
+  isar_flutter_libs: ^3.1.0
+  path_provider: ^2.1.2
+
+  # Immutable Models
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.9.0
+
+  # Preferences
+  shared_preferences: ^2.2.3
+
+  # UI Utilities
+  flutter_svg: ^2.0.10+1
+  intl: ^0.19.0
+  gap: ^3.0.1
+  google_fonts: ^6.2.1
+  crypto: ^3.0.3
+  encrypt: ^5.0.3
+  flutter_secure_storage: ^9.0.0
+  local_auth: ^2.2.0
+  uuid: ^4.3.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.2
+  build_runner: ^2.4.8
+  riverpod_generator: ^2.3.9
+  freezed: ^2.5.2
+  json_serializable: ^6.8.0
+  isar_generator: ^3.1.0
+  mocktail: ^1.0.5
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/
