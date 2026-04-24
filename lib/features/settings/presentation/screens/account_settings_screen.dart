@@ -164,6 +164,7 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () async {
+          final currentOwner = ref.read(authProvider).owner;
           final updatedOwner = OwnerProfile(
             gymName: _gymNameController.text,
             ownerName: _ownerNameController.text,
@@ -173,6 +174,15 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
             bankName: _bankNameController.text,
             accountNumber: _accountNumberController.text,
             ifsc: _ifscController.text,
+            // Preserve existing fields
+            isarId: currentOwner?.isarId,
+            level: currentOwner?.level ?? 1,
+            exp: currentOwner?.exp ?? 0,
+            strength: currentOwner?.strength ?? 0.5,
+            endurance: currentOwner?.endurance ?? 0.5,
+            dexterity: currentOwner?.dexterity ?? 0.5,
+            selectedCharacterId: currentOwner?.selectedCharacterId ?? 'warrior',
+            hmacSignature: currentOwner?.hmacSignature ?? '',
           );
           
           await ref.read(authProvider.notifier).saveOwner(updatedOwner);

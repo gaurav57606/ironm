@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
@@ -15,6 +16,19 @@ class AnalyticsScreen extends ConsumerWidget {
     
     final activeCount = stats.activeMembers;
     final revenue = stats.monthlyRevenue;
+    
+    // Normalize weekly revenue for the graph
+    final maxRev = stats.weeklyRevenue.isNotEmpty 
+        ? stats.weeklyRevenue.reduce((a, b) => a > b ? a : b) 
+        : 0.0;
+    final normalizedRev = stats.weeklyRevenue.map((v) => maxRev > 0 ? (v / maxRev).clamp(0.1, 1.0) : 0.1).toList();
+
+    // Normalize attendance for the graph
+    final maxAttendance = stats.attendanceTrends.isNotEmpty 
+        ? stats.attendanceTrends.reduce((a, b) => a > b ? a : b) 
+        : 0.0;
+    final normalizedAttendance = stats.attendanceTrends.map((v) => maxAttendance > 0 ? (v / maxAttendance).clamp(0.1, 1.0) : 0.1).toList();
+
     return Container(
       decoration: const BoxDecoration(
         gradient: AppColors.backgroundGradient,
@@ -31,17 +45,21 @@ class AnalyticsScreen extends ConsumerWidget {
                   child: ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
-                      _buildMainStats(activeCount, revenue),
+                      _buildMainStats(activeCount, revenue, stats.memberGrowth, stats.revenueGrowth),
                       const SizedBox(height: 32),
-                      _buildGraphSection('Revenue Trends', [0.4, 0.6, 0.5, 0.8, 0.7, 0.9, 0.85]),
+                      _buildGraphSection('Revenue Trends', normalizedRev),
                       const SizedBox(height: 24),
-                      _buildGraphSection('Member Attendance', [0.3, 0.5, 0.4, 0.6, 0.5, 0.7, 0.65]),
+                      _buildGraphSection('Member Attendance', normalizedAttendance),
                       const SizedBox(height: 32),
                       Text('Top Performing Plans', style: AppTextStyles.h3),
                       const SizedBox(height: 20),
-                      _buildPlanRank('Elite Coaching', 0.85, AppColors.primary),
-                      _buildPlanRank('Standard Gym', 0.65, AppColors.blue),
-                      _buildPlanRank('Yoga Specialized', 0.45, AppColors.active),
+                      if (stats.topPlans.isEmpty)
+                        const Center(child: Text('No plan data available', style: TextStyle(color: AppColors.textMuted)))
+                      else
+                        ...stats.topPlans.asMap().entries.map((entry) {
+                          final colors = [AppColors.primary, AppColors.blue, AppColors.active];
+                          return _buildPlanRank(entry.value.name, entry.value.percent, colors[entry.key % colors.length]);
+                        }),
                     ],
                   ),
                 ),
@@ -84,12 +102,12 @@ class AnalyticsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildMainStats(int activeMembers, double monthlyRevenue) {
+  Widget _buildMainStats(int activeMembers, double monthlyRevenue, double memberGrowth, double revenueGrowth) {
     return Row(
       children: [
-        Expanded(child: _buildStatCard('Active Members', activeMembers.toString(), '+${activeMembers > 0 ? 5 : 0}%', Icons.people_rounded)),
+        Expanded(child: _buildStatCard('Active Members', activeMembers.toString(), '${memberGrowth >= 0 ? '+' : ''}${memberGrowth.toStringAsFixed(0)}%', Icons.people_rounded)),
         const SizedBox(width: 16),
-        Expanded(child: _buildStatCard('Total Revenue', '₹${(monthlyRevenue / 1000).toStringAsFixed(1)}k', '+12%', Icons.account_balance_wallet_rounded)),
+        Expanded(child: _buildStatCard('Total Revenue', '₹${(monthlyRevenue / 1000).toStringAsFixed(1)}k', '${revenueGrowth >= 0 ? '+' : ''}${revenueGrowth.toStringAsFixed(0)}%', Icons.account_balance_wallet_rounded)),
       ],
     );
   }
