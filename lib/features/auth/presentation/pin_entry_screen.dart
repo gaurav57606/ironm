@@ -47,7 +47,7 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
   Future<void> _handleVerify() async {
     setState(() => _isLoading = true);
     try {
-      final success = await ref.read(authProvider.notifier).authenticate(pin: _pin);
+      final success = await ref.read(authProvider.notifier).verifyPin(_pin);
 
       if (mounted) {
         setState(() => _isLoading = false);

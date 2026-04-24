@@ -103,13 +103,18 @@ const MemberSchema = CollectionSchema(
       name: r'planName',
       type: IsarType.string,
     ),
-    r'profileImageUrl': PropertySchema(
+    r'planPrice': PropertySchema(
       id: 17,
+      name: r'planPrice',
+      type: IsarType.double,
+    ),
+    r'profileImageUrl': PropertySchema(
+      id: 18,
       name: r'profileImageUrl',
       type: IsarType.string,
     ),
     r'totalPaid': PropertySchema(
-      id: 18,
+      id: 19,
       name: r'totalPaid',
       type: IsarType.long,
     )
@@ -279,8 +284,9 @@ void _memberSerialize(
   writer.writeString(offsets[14], object.phone);
   writer.writeString(offsets[15], object.planId);
   writer.writeString(offsets[16], object.planName);
-  writer.writeString(offsets[17], object.profileImageUrl);
-  writer.writeLong(offsets[18], object.totalPaid);
+  writer.writeDouble(offsets[17], object.planPrice);
+  writer.writeString(offsets[18], object.profileImageUrl);
+  writer.writeLong(offsets[19], object.totalPaid);
 }
 
 Member _memberDeserialize(
@@ -313,10 +319,11 @@ Member _memberDeserialize(
     phone: reader.readStringOrNull(offsets[14]),
     planId: reader.readStringOrNull(offsets[15]),
     planName: reader.readStringOrNull(offsets[16]),
-    totalPaid: reader.readLongOrNull(offsets[18]) ?? 0,
+    planPrice: reader.readDoubleOrNull(offsets[17]),
+    profileImageUrl: reader.readStringOrNull(offsets[18]),
+    totalPaid: reader.readLongOrNull(offsets[19]) ?? 0,
   );
   object.isarId = id;
-  object.profileImageUrl = reader.readStringOrNull(offsets[17]);
   return object;
 }
 
@@ -368,8 +375,10 @@ P _memberDeserializeProp<P>(
     case 16:
       return (reader.readStringOrNull(offset)) as P;
     case 17:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readDoubleOrNull(offset)) as P;
     case 18:
+      return (reader.readStringOrNull(offset)) as P;
+    case 19:
       return (reader.readLongOrNull(offset) ?? 0) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -2692,6 +2701,84 @@ extension MemberQueryFilter on QueryBuilder<Member, Member, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Member, Member, QAfterFilterCondition> planPriceIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'planPrice',
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> planPriceIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'planPrice',
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> planPriceEqualTo(
+    double? value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'planPrice',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> planPriceGreaterThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'planPrice',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> planPriceLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'planPrice',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterFilterCondition> planPriceBetween(
+    double? lower,
+    double? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'planPrice',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
   QueryBuilder<Member, Member, QAfterFilterCondition> profileImageUrlIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -3087,6 +3174,18 @@ extension MemberQuerySortBy on QueryBuilder<Member, Member, QSortBy> {
     });
   }
 
+  QueryBuilder<Member, Member, QAfterSortBy> sortByPlanPrice() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'planPrice', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterSortBy> sortByPlanPriceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'planPrice', Sort.desc);
+    });
+  }
+
   QueryBuilder<Member, Member, QAfterSortBy> sortByProfileImageUrl() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'profileImageUrl', Sort.asc);
@@ -3305,6 +3404,18 @@ extension MemberQuerySortThenBy on QueryBuilder<Member, Member, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Member, Member, QAfterSortBy> thenByPlanPrice() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'planPrice', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Member, Member, QAfterSortBy> thenByPlanPriceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'planPrice', Sort.desc);
+    });
+  }
+
   QueryBuilder<Member, Member, QAfterSortBy> thenByProfileImageUrl() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'profileImageUrl', Sort.asc);
@@ -3438,6 +3549,12 @@ extension MemberQueryWhereDistinct on QueryBuilder<Member, Member, QDistinct> {
     });
   }
 
+  QueryBuilder<Member, Member, QDistinct> distinctByPlanPrice() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'planPrice');
+    });
+  }
+
   QueryBuilder<Member, Member, QDistinct> distinctByProfileImageUrl(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -3560,6 +3677,12 @@ extension MemberQueryProperty on QueryBuilder<Member, Member, QQueryProperty> {
   QueryBuilder<Member, String?, QQueryOperations> planNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'planName');
+    });
+  }
+
+  QueryBuilder<Member, double?, QQueryOperations> planPriceProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'planPrice');
     });
   }
 

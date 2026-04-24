@@ -116,6 +116,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     return false;
   }
 
+  Future<bool> verifyPin(String pin) => authenticate(pin: pin);
+
   Future<bool> login(String email, String password) async {
     if (email.isNotEmpty && password.length >= 6) {
       state = state.copyWith(isAuthenticated: true, authAttempts: 0);

@@ -33,7 +33,7 @@ class SettingsScreen extends ConsumerWidget {
                     _buildSettingsToggle(Icons.dark_mode_outlined, 'Dark Mode', 'System default enabled', true),
                     
                     _buildSectionHeader('System'),
-                    _buildSettingsItem(Icons.cloud_upload_outlined, 'Backup & Restore', 'Keep your data safe', () => context.push('/settings/backup-restore')),
+                    _buildSettingsItem(Icons.cloud_upload_outlined, 'Backup & Restore', 'Keep your data safe', () => context.push('/settings/backup')),
                     _buildSettingsItem(Icons.security_rounded, 'Security & PIN', 'Biometric & PIN lock', () {}),
                     _buildSettingsItem(Icons.language_rounded, 'Language', 'English (IN)', () {}),
                     

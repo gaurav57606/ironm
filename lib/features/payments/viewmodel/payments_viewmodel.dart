@@ -51,8 +51,8 @@ class RecordPaymentNotifier extends AsyncNotifier<void> {
 
       // 1. Build invoice number
       final seq = await paymentRepo.getNextInvoiceSequence('INV');
-      final invoiceNum = seq.nextInvoiceId;
-      seq.nextNumber += 1;
+      seq.lastNumber += 1;
+      final invoiceNum = '${seq.prefix}-${seq.lastNumber.toString().padLeft(5, '0')}';
       await paymentRepo.updateInvoiceSequence(seq);
 
       // 2. Create payment record

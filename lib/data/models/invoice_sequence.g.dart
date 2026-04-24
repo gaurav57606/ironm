@@ -17,9 +17,9 @@ const InvoiceSequenceSchema = CollectionSchema(
   name: r'InvoiceSequence',
   id: -8769776883567169139,
   properties: {
-    r'nextNumber': PropertySchema(
+    r'lastNumber': PropertySchema(
       id: 0,
-      name: r'nextNumber',
+      name: r'lastNumber',
       type: IsarType.long,
     ),
     r'prefix': PropertySchema(
@@ -72,7 +72,7 @@ void _invoiceSequenceSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeLong(offsets[0], object.nextNumber);
+  writer.writeLong(offsets[0], object.lastNumber);
   writer.writeString(offsets[1], object.prefix);
 }
 
@@ -83,7 +83,7 @@ InvoiceSequence _invoiceSequenceDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = InvoiceSequence(
-    nextNumber: reader.readLongOrNull(offsets[0]) ?? 1,
+    lastNumber: reader.readLongOrNull(offsets[0]) ?? 0,
     prefix: reader.readString(offsets[1]),
   );
   object.isarId = id;
@@ -98,7 +98,7 @@ P _invoiceSequenceDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readLongOrNull(offset) ?? 1) as P;
+      return (reader.readLongOrNull(offset) ?? 0) as P;
     case 1:
       return (reader.readString(offset)) as P;
     default:
@@ -376,45 +376,45 @@ extension InvoiceSequenceQueryFilter
   }
 
   QueryBuilder<InvoiceSequence, InvoiceSequence, QAfterFilterCondition>
-      nextNumberEqualTo(int value) {
+      lastNumberEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'nextNumber',
+        property: r'lastNumber',
         value: value,
       ));
     });
   }
 
   QueryBuilder<InvoiceSequence, InvoiceSequence, QAfterFilterCondition>
-      nextNumberGreaterThan(
+      lastNumberGreaterThan(
     int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'nextNumber',
+        property: r'lastNumber',
         value: value,
       ));
     });
   }
 
   QueryBuilder<InvoiceSequence, InvoiceSequence, QAfterFilterCondition>
-      nextNumberLessThan(
+      lastNumberLessThan(
     int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'nextNumber',
+        property: r'lastNumber',
         value: value,
       ));
     });
   }
 
   QueryBuilder<InvoiceSequence, InvoiceSequence, QAfterFilterCondition>
-      nextNumberBetween(
+      lastNumberBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -422,7 +422,7 @@ extension InvoiceSequenceQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'nextNumber',
+        property: r'lastNumber',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -577,16 +577,16 @@ extension InvoiceSequenceQueryLinks
 extension InvoiceSequenceQuerySortBy
     on QueryBuilder<InvoiceSequence, InvoiceSequence, QSortBy> {
   QueryBuilder<InvoiceSequence, InvoiceSequence, QAfterSortBy>
-      sortByNextNumber() {
+      sortByLastNumber() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'nextNumber', Sort.asc);
+      return query.addSortBy(r'lastNumber', Sort.asc);
     });
   }
 
   QueryBuilder<InvoiceSequence, InvoiceSequence, QAfterSortBy>
-      sortByNextNumberDesc() {
+      sortByLastNumberDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'nextNumber', Sort.desc);
+      return query.addSortBy(r'lastNumber', Sort.desc);
     });
   }
 
@@ -620,16 +620,16 @@ extension InvoiceSequenceQuerySortThenBy
   }
 
   QueryBuilder<InvoiceSequence, InvoiceSequence, QAfterSortBy>
-      thenByNextNumber() {
+      thenByLastNumber() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'nextNumber', Sort.asc);
+      return query.addSortBy(r'lastNumber', Sort.asc);
     });
   }
 
   QueryBuilder<InvoiceSequence, InvoiceSequence, QAfterSortBy>
-      thenByNextNumberDesc() {
+      thenByLastNumberDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'nextNumber', Sort.desc);
+      return query.addSortBy(r'lastNumber', Sort.desc);
     });
   }
 
@@ -650,9 +650,9 @@ extension InvoiceSequenceQuerySortThenBy
 extension InvoiceSequenceQueryWhereDistinct
     on QueryBuilder<InvoiceSequence, InvoiceSequence, QDistinct> {
   QueryBuilder<InvoiceSequence, InvoiceSequence, QDistinct>
-      distinctByNextNumber() {
+      distinctByLastNumber() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'nextNumber');
+      return query.addDistinctBy(r'lastNumber');
     });
   }
 
@@ -672,9 +672,9 @@ extension InvoiceSequenceQueryProperty
     });
   }
 
-  QueryBuilder<InvoiceSequence, int, QQueryOperations> nextNumberProperty() {
+  QueryBuilder<InvoiceSequence, int, QQueryOperations> lastNumberProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'nextNumber');
+      return query.addPropertyName(r'lastNumber');
     });
   }
 

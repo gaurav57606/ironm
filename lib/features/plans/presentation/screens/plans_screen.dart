@@ -3,9 +3,9 @@
 // ═══════════════════════════════════════════════════════════════════
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../data/models/plan.dart';
-import '../viewmodel/plans_viewmodel.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../data/models/plan.dart';
+import '../../viewmodel/plans_viewmodel.dart';
 
 class PlansScreen extends ConsumerWidget {
   const PlansScreen({super.key});

@@ -9,15 +9,10 @@ class InvoiceSequence {
   @Index(unique: true)
   late String prefix; // e.g. "INV-2026-"
 
-  late int nextNumber;
+  late int lastNumber;
 
   InvoiceSequence({
     required this.prefix,
-    this.nextNumber = 1,
+    this.lastNumber = 0,
   });
-
-  @ignore
-  String get nextInvoiceId {
-    return '$prefix${nextNumber.toString().padLeft(4, '0')}';
-  }
 }

@@ -273,6 +273,6 @@ class BackupService {
 
   Map<String, dynamic> _invoiceSequenceToMap(InvoiceSequence i) => {
     'prefix': i.prefix,
-    'nextNumber': i.nextNumber,
+    'lastNumber': i.lastNumber,
   };
 }

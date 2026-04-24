@@ -20,8 +20,8 @@ class SalesNotifier extends Notifier<void> {
     
     // 1. Generate invoice number
     final seq = await repo.getNextInvoiceSequence('SALE');
-    final invoiceNum = seq.nextInvoiceId;
-    seq.nextNumber += 1;
+    seq.lastNumber += 1;
+    final invoiceNum = '${seq.prefix}-${seq.lastNumber.toString().padLeft(5, '0')}';
     await repo.updateInvoiceSequence(seq);
 
     final sale = Sale(

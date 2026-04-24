@@ -11,7 +11,7 @@ import '../../features/members/presentation/quick_add_member_screen.dart';
 import '../../features/members/presentation/member_detail_screen.dart';
 import '../../features/analytics/presentation/analytics_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
-import '../../features/settings/presentation/backup_restore_screen.dart';
+import '../../features/settings/presentation/screens/backup_screen.dart';
 import '../../features/billing/presentation/pos_screen.dart';
 
 import '../../features/auth/presentation/login_screen.dart';
@@ -24,7 +24,7 @@ import '../../features/notifications/presentation/notifications_screen.dart';
 
 import '../../features/attendance/presentation/attendance_screen.dart';
 import '../../features/billing/presentation/invoice_screen.dart';
-import '../../features/plans/presentation/plans_screen.dart';
+import '../../features/plans/presentation/screens/plans_screen.dart';
 
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -176,7 +176,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) => const SettingsScreen(),
                 routes: [
                   GoRoute(
-                    path: 'backup-restore',
+                    path: 'backup',
                     builder: (context, state) => const BackupRestoreScreen(),
                   ),
                   GoRoute(

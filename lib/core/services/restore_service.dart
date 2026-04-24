@@ -267,6 +267,6 @@ class RestoreService {
 
   InvoiceSequence _mapToInvoiceSequence(Map<String, dynamic> i) => InvoiceSequence(
     prefix: i['prefix'],
-    nextNumber: i['nextNumber'] ?? 1,
+    lastNumber: i['lastNumber'] ?? 0,
   );
 }

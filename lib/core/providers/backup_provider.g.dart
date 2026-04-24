@@ -21,7 +21,7 @@ final backupServiceProvider = AutoDisposeProvider<BackupService>.internal(
 );
 
 typedef BackupServiceRef = AutoDisposeProviderRef<BackupService>;
-String _$restoreServiceHash() => r'9046d7dbf80aa2b306f13ebefe6ddf2279dad5c1';
+String _$restoreServiceHash() => r'48bbd521c176d964b6fea20020db708caa05d027';
 
 /// See also [restoreService].
 @ProviderFor(restoreService)

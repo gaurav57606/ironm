@@ -30,7 +30,7 @@ class IsarPlanRepository implements IPlanRepository {
   @override
   Future<Plan?> getById(String id) async {
     if (_isar == null) return null;
-    return _isar.plans.where().idEqualTo(id).findFirst();
+    return _isar.plans.filter().idEqualTo(id).findFirst();
   }
 
   @override
@@ -46,7 +46,7 @@ class IsarPlanRepository implements IPlanRepository {
   Future<void> delete(String id) async {
     if (_isar == null) return;
     await _isar.writeTxn(() async {
-      await _isar.plans.where().idEqualTo(id).deleteAll();
+      await _isar.plans.filter().idEqualTo(id).deleteAll();
     });
   }
 
