@@ -52,18 +52,24 @@ class DashboardScreen extends ConsumerWidget {
                         title: '$expiredCount memberships expired',
                         subtitle: 'Tap to view and take action',
                         color: AppColors.expired,
-                        onTap: () => context.push('/members?filter=expired'),
+                        onTap: () {
+                          ref.read(memberTabProvider.notifier).state = 3;
+                          context.go('/gym');
+                        },
                       ),
                     if (expiringCount > 0)
                       AlertBanner(
                         title: '$expiringCount expiring in 7 days',
                         subtitle: 'Tap to notify members',
                         color: AppColors.expiring,
-                        onTap: () => context.push('/members?filter=expiring'),
+                        onTap: () {
+                          ref.read(memberTabProvider.notifier).state = 2;
+                          context.go('/gym');
+                        },
                       ),
                     const SizedBox(height: 12),
                     _buildSectionHeader(
-                        context, 'Due Today', '/members?filter=due-today'),
+                        context, 'Due Today', null),
                     _buildDueTodayList(members),
                     _buildSectionHeader(context, 'This Month', null),
                     RevenueMiniBars(revenue: stats.monthlyRevenue, trend: 12),
@@ -87,7 +93,7 @@ class DashboardScreen extends ConsumerWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Good morning',
+              Text(_getGreeting(),
                   style: AppTextStyles.label
                       .copyWith(color: AppColors.textSecondary, fontSize: 11)),
               Text(owner?.gymName ?? "IronM Fitness",
@@ -116,6 +122,13 @@ class DashboardScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
   }
 
   Widget _buildSubHeader() {

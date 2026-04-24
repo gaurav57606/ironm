@@ -132,15 +132,20 @@ class AuthViewModel extends _$AuthViewModel {
     try {
       final savedEmail = await _storage.read(key: 'auth_email');
       final savedPassword = await _storage.read(key: 'auth_password');
-      
       if (email == savedEmail && password == savedPassword) {
-        state = state.copyWith(isAuthenticated: true, authAttempts: 0, isLoading: false);
+        state = state.copyWith(
+          isAuthenticated: true,
+          authAttempts: 0,
+          isLoading: false,
+        );
         return true;
       }
-    } finally {
       state = state.copyWith(isLoading: false);
+      return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false);
+      return false;
     }
-    return false;
   }
 
   Future<bool> signUp(String email, String password, {

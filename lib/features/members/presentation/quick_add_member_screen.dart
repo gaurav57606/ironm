@@ -10,7 +10,6 @@ import '../../plans/viewmodel/plans_viewmodel.dart';
 import '../../payments/viewmodel/payments_viewmodel.dart';
 import '../../../data/models/plan.dart';
 import '../../../data/models/member.dart';
-import '../../../data/models/payment.dart';
 import '../../../shared/widgets/status_bar_wrapper.dart';
 
 class QuickAddMemberScreen extends ConsumerStatefulWidget {
@@ -26,6 +25,13 @@ class _QuickAddMemberScreenState extends ConsumerState<QuickAddMemberScreen> {
   Plan? _selectedPlanObj;
   String _paymentMethod = 'UPI';
   DateTime _joinDate = DateTime.now();
+  
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -369,6 +375,7 @@ class _QuickAddMemberScreenState extends ConsumerState<QuickAddMemberScreen> {
               memberId: memberId,
               plan: plan,
               method: _paymentMethod,
+              paymentDate: _joinDate,
             );
 
             if (mounted) context.pop();

@@ -43,6 +43,7 @@ class RecordPaymentNotifier extends AsyncNotifier<void> {
     required double gstRate,
     String? reference,
     List<PlanComponentSnapshot> components = const [],
+    DateTime? paymentDate,
   }) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
@@ -59,7 +60,7 @@ class RecordPaymentNotifier extends AsyncNotifier<void> {
       final payment = Payment(
         id: const Uuid().v4(),
         memberId: memberId,
-        date: DateTime.now(),
+        date: paymentDate ?? DateTime.now(),
         amount: amount,
         method: method,
         reference: reference,
@@ -77,7 +78,7 @@ class RecordPaymentNotifier extends AsyncNotifier<void> {
       // 3. Update member totalPaid + expiryDate
       final member = await memberRepo.getById(memberId);
       if (member != null) {
-        member.totalPaid += (amount * 100).round(); // stored in paise
+        member.totalPaid += amount.round();
         final base = (member.expiryDate != null && member.expiryDate!.isAfter(DateTime.now()))
             ? member.expiryDate!
             : DateTime.now();
@@ -104,6 +105,7 @@ class RecordPaymentNotifier extends AsyncNotifier<void> {
     required String memberId,
     required Plan plan,
     required String method,
+    DateTime? paymentDate,
   }) async {
     final subtotal = plan.totalPrice / 1.18;
     final gstAmount = plan.totalPrice - subtotal;
@@ -122,6 +124,7 @@ class RecordPaymentNotifier extends AsyncNotifier<void> {
         name: c.name,
         price: c.price,
       )).toList(),
+      paymentDate: paymentDate,
     );
   }
 }

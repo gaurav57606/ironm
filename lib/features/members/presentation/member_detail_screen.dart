@@ -94,7 +94,7 @@ class _MemberDetailScreenState extends ConsumerState<MemberDetailScreen> {
             ),
             alignment: Alignment.center,
             child: Text(
-              member.name.substring(0, 1).toUpperCase(),
+              (member.name.isNotEmpty ? member.name[0] : '?').toUpperCase(),
               style: TextStyle(color: statusColor, fontWeight: FontWeight.w700, fontSize: 13),
             ),
           ),

@@ -30,17 +30,28 @@ import '../../features/inventory/presentation/inventory_screen.dart';
 import '../../features/sales/presentation/sales_history_screen.dart';
 
 
+// Bridge notifier — signals GoRouter to re-run redirect when auth changes
+class _AuthChangeNotifier extends ChangeNotifier {
+  _AuthChangeNotifier(this._ref) {
+    _ref.listen(authProvider, (_, __) => notifyListeners());
+  }
+  final Ref _ref;
+}
+
+final _authChangeNotifierProvider = Provider<_AuthChangeNotifier>((ref) {
+  return _AuthChangeNotifier(ref);
+});
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
+  final notifier = ref.watch(_authChangeNotifierProvider);
 
   return GoRouter(
-    initialLocation: '/dashboard',
+    initialLocation: '/',
+    refreshListenable: notifier,
     redirect: (context, state) {
-      // While loading, always stay on a neutral splash/loading path.
-      // Do NOT return null here — null keeps initialLocation which can
-      // briefly render the dashboard before redirect fires.
+      final authState = ref.read(authProvider); // READ not watch — router is stable
+
       if (authState.isLoading) {
-        // Only redirect to '/' (loading scaffold) if not already there
         if (state.matchedLocation != '/') return '/';
         return null;
       }
@@ -57,21 +68,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isPinEntryPath = state.matchedLocation == '/unlock';
       final isLoadingPath = state.matchedLocation == '/';
 
-      // Step 1: First ever launch → onboarding
       if (isFirstLaunch && !isOnboarding) return '/onboarding';
-
-      // Step 2: Not authenticated (no owner profile) → login
       if (!isAuth && !isLoggingIn && !isOnboarding) return '/login';
-
-      // Step 3: Authenticated but no PIN set → setup PIN
       if (isAuth && !isPinSetup && !isPinSetupPath) return '/setup-pin';
-
-      // Step 4: Authenticated + PIN set but not unlocked → PIN entry
-      // This is the RETURNING USER path — most common case after first launch
       if (isAuth && isPinSetup && !unlocked && !isPinEntryPath) return '/unlock';
-
-      // Step 5: Already authenticated and unlocked → go to dashboard
-      // (covers cases where user lands on /, /login, /onboarding after unlock)
       if (isAuth && unlocked && (isLoggingIn || isOnboarding || isLoadingPath)) {
         return '/dashboard';
       }
