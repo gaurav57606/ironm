@@ -1,13 +1,20 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../shared/widgets/status_bar_wrapper.dart';
+import '../../dashboard/viewmodel/dashboard_viewmodel.dart';
+import 'package:intl/intl.dart';
 
-class AnalyticsScreen extends StatelessWidget {
+class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final statsAsync = ref.watch(dashboardStatsProvider);
+    final stats = statsAsync.value ?? const DashboardStats();
+    
+    final activeCount = stats.activeMembers;
+    final revenue = stats.monthlyRevenue;
     return Container(
       decoration: const BoxDecoration(
         gradient: AppColors.backgroundGradient,
@@ -24,7 +31,7 @@ class AnalyticsScreen extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
-                      _buildMainStats(),
+                      _buildMainStats(activeCount, revenue),
                       const SizedBox(height: 32),
                       _buildGraphSection('Revenue Trends', [0.4, 0.6, 0.5, 0.8, 0.7, 0.9, 0.85]),
                       const SizedBox(height: 24),
@@ -65,7 +72,8 @@ class AnalyticsScreen extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Text('March 2026', style: AppTextStyles.bodySmall.copyWith(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
+                Text(DateFormat('MMMM yyyy').format(DateTime.now()), 
+                  style: AppTextStyles.bodySmall.copyWith(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
                 const SizedBox(width: 8),
                 const Icon(Icons.calendar_today_rounded, color: AppColors.orange, size: 12),
               ],
@@ -76,12 +84,12 @@ class AnalyticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMainStats() {
+  Widget _buildMainStats(int activeMembers, double monthlyRevenue) {
     return Row(
       children: [
-        Expanded(child: _buildStatCard('Total Members', '1,248', '+12%', Icons.people_rounded)),
+        Expanded(child: _buildStatCard('Active Members', activeMembers.toString(), '+${activeMembers > 0 ? 5 : 0}%', Icons.people_rounded)),
         const SizedBox(width: 16),
-        Expanded(child: _buildStatCard('Total Revenue', '₹1.4L', '+8%', Icons.account_balance_wallet_rounded)),
+        Expanded(child: _buildStatCard('Total Revenue', '₹${(monthlyRevenue / 1000).toStringAsFixed(1)}k', '+12%', Icons.account_balance_wallet_rounded)),
       ],
     );
   }

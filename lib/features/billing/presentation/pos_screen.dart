@@ -7,8 +7,12 @@ import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/status_bar_wrapper.dart';
 import '../../inventory/viewmodel/inventory_viewmodel.dart';
 import '../../sales/viewmodel/sales_viewmodel.dart';
+import '../../members/viewmodel/members_viewmodel.dart';
+import '../../payments/viewmodel/payments_viewmodel.dart';
 import '../../../data/models/product.dart';
 import '../../../data/models/sale.dart';
+import '../../../data/models/member.dart';
+import '../../dashboard/presentation/widgets/stat_card.dart';
 
 
 
@@ -54,6 +58,7 @@ class _POSScreenState extends ConsumerState<POSScreen> {
           child: Column(
             children: [
               _buildAppBar(),
+              _buildStatsHeader(ref),
               _buildCategoryFilter(categories),
               Expanded(
                 child: Row(
@@ -88,6 +93,41 @@ class _POSScreenState extends ConsumerState<POSScreen> {
           Text(
             'Point of Sale',
             style: AppTextStyles.h1.copyWith(fontSize: 24),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsHeader(WidgetRef ref) {
+    final payments = ref.watch(paymentsStreamProvider).value ?? [];
+    final members = ref.watch(membersProvider);
+    
+    final now = DateTime.now();
+    final mtdTotal = payments.where((p) => p.date.month == now.month && p.date.year == now.year)
+                             .fold(0.0, (sum, p) => sum + p.amount);
+    final activeCount = members.where((m) => m.getStatus(now) == MemberStatus.active).length;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Row(
+        children: [
+          Expanded(
+            child: StatCard(
+              label: 'Membership Revenue',
+              value: '₹${mtdTotal.toInt()}',
+              icon: Icons.payments_rounded,
+              iconColor: AppColors.primary,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: StatCard(
+              label: 'Active Members',
+              value: activeCount.toString(),
+              icon: Icons.people_alt_rounded,
+              iconColor: AppColors.active,
+            ),
           ),
         ],
       ),
@@ -292,6 +332,23 @@ class _POSScreenState extends ConsumerState<POSScreen> {
   }
 
   Future<void> _handleCheckout(double total, List<Product> products) async {
+    final selectedMethod = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.bg3,
+        title: Text('Select Payment Method', style: AppTextStyles.h3),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: ['Cash', 'UPI', 'Card', 'Bank'].map((m) => ListTile(
+            title: Text(m, style: AppTextStyles.body),
+            onTap: () => Navigator.pop(context, m),
+          )).toList(),
+        ),
+      ),
+    );
+
+    if (selectedMethod == null) return;
+
     final saleItems = _cart.entries.map((entry) {
       final product = products.firstWhere((p) => p.id == entry.key);
       return SaleItem(
@@ -305,7 +362,7 @@ class _POSScreenState extends ConsumerState<POSScreen> {
     try {
       await ref.read(salesProvider.notifier).recordSale(
         items: saleItems,
-        paymentMethod: 'Cash', // Default for now
+        paymentMethod: selectedMethod,
         totalAmount: total,
       );
       if (mounted) {

@@ -20,13 +20,13 @@ class SettingsScreen extends ConsumerWidget {
         body: StatusBarWrapper(
           child: Column(
             children: [
-              _buildHeader(context),
+              _buildHeader(context, ref),
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   children: [
                     _buildSectionHeader('General'),
-                    _buildSettingsItem(Icons.person_outline_rounded, 'Account Settings', 'Manage your gym profile', () {}),
+                    _buildSettingsItem(Icons.person_outline_rounded, 'Account Settings', 'Manage your gym profile', () => context.push('/settings/account')),
                     _buildSettingsItem(Icons.card_membership_rounded, 'Membership Plans', 'Manage plans & pricing', () => context.push('/settings/plans')),
                     _buildSettingsItem(Icons.notifications_none_rounded, 'Notifications', 'Expiry alerts & reminders', () {}),
                     _buildSettingsItem(Icons.sync_rounded, 'Data Synchronization', 'Sync with cloud (Last sync: 2h ago)', () {}),
@@ -54,7 +54,8 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, WidgetRef ref) {
+    final owner = ref.watch(authProvider).owner;
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
       child: Row(
@@ -71,7 +72,8 @@ class SettingsScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(11),
             ),
             alignment: Alignment.center,
-            child: const Text('R', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
+            child: Text(owner?.ownerName.isNotEmpty == true ? owner!.ownerName[0].toUpperCase() : 'I', 
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)),
           ),
         ],
       ),

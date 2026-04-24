@@ -6,8 +6,10 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:isar/isar.dart';
 import 'package:uuid/uuid.dart';
 import '../../../data/models/member.dart';
+import '../../../data/models/payment.dart';
 import '../../../data/repositories/member_repository.dart';
 import '../../../core/providers/database_provider.dart';
+import '../../payments/viewmodel/payments_viewmodel.dart';
 
 part 'members_viewmodel.g.dart';
 
@@ -78,27 +80,6 @@ class MembersViewModel extends _$MembersViewModel {
   FutureOr<void> build() async {}
 
   Future<void> addMember(Member member) async {
-    final repo = ref.read(memberRepositoryProvider);
-    await repo.save(member);
-  }
-
-  Future<void> addMemberDetails({
-    required String name,
-    required String phone,
-    required String planName,
-    required double planPrice,
-    required String paymentMethod,
-  }) async {
-    final member = Member(
-      memberId: const Uuid().v4(),
-      name: name,
-      phone: phone,
-      planName: planName,
-      planPrice: planPrice,
-      joinDate: DateTime.now(),
-      expiryDate: DateTime.now().add(const Duration(days: 30)), // Basic logic
-      lastUpdated: DateTime.now(),
-    );
     final repo = ref.read(memberRepositoryProvider);
     await repo.save(member);
   }

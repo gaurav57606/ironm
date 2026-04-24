@@ -4,7 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import 'package:uuid/uuid.dart';
 import '../viewmodel/members_viewmodel.dart';
+import '../../plans/viewmodel/plans_viewmodel.dart';
+import '../../payments/viewmodel/payments_viewmodel.dart';
+import '../../../data/models/plan.dart';
+import '../../../data/models/member.dart';
+import '../../../data/models/payment.dart';
 import '../../../shared/widgets/status_bar_wrapper.dart';
 
 class QuickAddMemberScreen extends ConsumerStatefulWidget {
@@ -17,8 +23,7 @@ class QuickAddMemberScreen extends ConsumerStatefulWidget {
 class _QuickAddMemberScreenState extends ConsumerState<QuickAddMemberScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
-  String _selectedPlan = 'Monthly';
-  double _planPrice = 1298;
+  Plan? _selectedPlanObj;
   String _paymentMethod = 'UPI';
 
   @override
@@ -139,12 +144,17 @@ class _QuickAddMemberScreenState extends ConsumerState<QuickAddMemberScreen> {
   }
 
   Widget _buildPlanSelection() {
-    final plans = [
-      {'label': 'Monthly ₹1,298', 'price': 1298.0},
-      {'label': 'Quarterly ₹3,540', 'price': 3540.0},
-      {'label': 'Half-Year ₹6,490', 'price': 6490.0},
-      {'label': 'Annual ₹11,800', 'price': 11800.0},
-    ];
+    final plans = ref.watch(plansStreamProvider).value ?? [];
+
+    if (plans.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+        child: Text(
+          'No active plans found. Add plans in Settings → Membership Plans.',
+          style: AppTextStyles.label.copyWith(color: AppColors.textMuted, fontSize: 10),
+        ),
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
@@ -157,11 +167,10 @@ class _QuickAddMemberScreenState extends ConsumerState<QuickAddMemberScreen> {
             spacing: 5,
             runSpacing: 5,
             children: plans.map((p) {
-              final isSelected = _selectedPlan == p['label'].toString().split(' ')[0];
+              final isSelected = _selectedPlanObj?.id == p.id;
               return GestureDetector(
                 onTap: () => setState(() {
-                  _selectedPlan = p['label'].toString().split(' ')[0];
-                  _planPrice = p['price'] as double;
+                  _selectedPlanObj = p;
                 }),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -171,7 +180,7 @@ class _QuickAddMemberScreenState extends ConsumerState<QuickAddMemberScreen> {
                     border: Border.all(color: isSelected ? AppColors.orange : AppColors.border),
                   ),
                   child: Text(
-                    p['label'] as String,
+                    p.name,
                     style: TextStyle(
                       color: isSelected ? AppColors.orange : AppColors.textSecondary,
                       fontWeight: FontWeight.w600,
@@ -188,9 +197,12 @@ class _QuickAddMemberScreenState extends ConsumerState<QuickAddMemberScreen> {
   }
 
   Widget _buildPlanSummary() {
-    final subtotal = _planPrice / 1.18;
-    final gst = _planPrice - subtotal;
-    final expiryDate = DateTime.now().add(const Duration(days: 30));
+    if (_selectedPlanObj == null) return const SizedBox.shrink();
+
+    final totalPrice = _selectedPlanObj!.totalPrice;
+    final subtotal = totalPrice / 1.18;
+    final gst = totalPrice - subtotal;
+    final expiryDate = DateTime.now().add(Duration(days: _selectedPlanObj!.durationMonths * 30));
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -205,14 +217,14 @@ class _QuickAddMemberScreenState extends ConsumerState<QuickAddMemberScreen> {
         children: [
           Text('PLAN SUMMARY', style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.orange, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
           const SizedBox(height: 5),
-          _buildSummaryRow('Gym Access + Locker + Steam', '₹${subtotal.toInt()}'),
-          _buildSummaryRow('GST 18%', '₹${gst.toInt()}'),
+          _buildSummaryRow(_selectedPlanObj!.name, '₹${totalPrice.toInt()}'),
+          _buildSummaryRow('GST 18% (Included)', '₹${gst.toInt()}'),
           const Divider(height: 10, color: Color(0x33FF6B2B)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Total', style: AppTextStyles.body.copyWith(fontSize: 11, fontWeight: FontWeight.w700)),
-              Text('₹${_planPrice.toInt()}', style: AppTextStyles.body.copyWith(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.orange)),
+              Text('₹${totalPrice.toInt()}', style: AppTextStyles.body.copyWith(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.orange)),
             ],
           ),
           const SizedBox(height: 3),
@@ -280,18 +292,33 @@ class _QuickAddMemberScreenState extends ConsumerState<QuickAddMemberScreen> {
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: () {
-            if (_nameController.text.isNotEmpty) {
-              ref.read(membersNotifierProvider.notifier).addMemberDetails(
-                name: _nameController.text,
-                phone: _phoneController.text,
-                planName: _selectedPlan,
-                planPrice: _planPrice,
-                paymentMethod: _paymentMethod,
-              );
-              context.pop();
-            }
+          onPressed: () async {
+            if (_nameController.text.isEmpty || _selectedPlanObj == null) return;
+            
+            final plan = _selectedPlanObj!;
+            final memberId = const Uuid().v4();
+            
+            // 1. Create member (no expiry — payment step will set it)
+            final member = Member(
+              memberId: memberId,
+              name: _nameController.text.trim(),
+              phone: _phoneController.text.trim(),
+              planId: plan.id,
+              planName: plan.name,
+              joinDate: DateTime.now(),
+              lastUpdated: DateTime.now(),
+            );
+            
+            await ref.read(membersNotifierProvider.notifier).addMember(member);
 
+            // 2. Record payment → this sets expiryDate correctly
+            await ref.read(recordPaymentNotifierProvider.notifier).recordMemberPayment(
+              memberId: memberId,
+              plan: plan,
+              method: _paymentMethod,
+            );
+
+            if (mounted) context.pop();
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.orange,

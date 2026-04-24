@@ -12,6 +12,7 @@ import '../../features/members/presentation/member_detail_screen.dart';
 import '../../features/analytics/presentation/analytics_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/settings/presentation/screens/backup_screen.dart';
+import '../../features/settings/presentation/screens/account_settings_screen.dart';
 import '../../features/billing/presentation/pos_screen.dart';
 
 import '../../features/auth/presentation/login_screen.dart';
@@ -25,6 +26,8 @@ import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/attendance/presentation/attendance_screen.dart';
 import '../../features/billing/presentation/invoice_screen.dart';
 import '../../features/plans/presentation/screens/plans_screen.dart';
+import '../../features/inventory/presentation/inventory_screen.dart';
+import '../../features/sales/presentation/sales_history_screen.dart';
 
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -141,6 +144,16 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/pos',
                 builder: (context, state) => const POSScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'inventory',
+                    builder: (context, state) => const InventoryScreen(),
+                  ),
+                  GoRoute(
+                    path: 'sales-history',
+                    builder: (context, state) => const SalesHistoryScreen(),
+                  ),
+                ],
               ),
             ],
           ),
@@ -182,6 +195,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'plans',
                     builder: (context, state) => const PlansScreen(),
+                  ),
+                  GoRoute(
+                    path: 'account',
+                    builder: (context, state) => const AccountSettingsScreen(),
                   ),
                 ],
               ),

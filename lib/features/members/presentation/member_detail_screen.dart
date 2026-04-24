@@ -212,22 +212,22 @@ class _MemberDetailScreenState extends ConsumerState<MemberDetailScreen> {
       ),
       child: Column(
         children: [
-          _buildInfoRow('Plan', member.planName ?? 'Monthly Plan'),
+          _buildInfoRow('Plan', member.planName ?? 'No Plan Active'),
           const Divider(height: 16, color: AppColors.border),
           _buildInfoRow('Join Date', DateFormatter.format(member.joinDate)),
           const Divider(height: 16, color: AppColors.border),
           _buildInfoRow('Expiry', member.expiryDate != null ? DateFormatter.format(member.expiryDate!) : 'No Expiry', valueColor: statusColor),
           const Divider(height: 16, color: AppColors.border),
-          _buildInfoRow('Status', days < 0 ? 'Expired' : 'Active', valueColor: statusColor),
+          _buildInfoRow('Status', member.getStatus(DateTime.now()).name.toUpperCase(), valueColor: statusColor),
         ],
       ),
     );
   }
 
   Widget _buildPlanIncludesCard(Member member) {
-    final subtotal = (member.planPrice ?? 1298) / 1.18;
-    final gst = (member.planPrice ?? 1298) - subtotal;
-    
+    final latestPayment = ref.watch(memberPaymentsProvider(member.memberId)).firstOrNull;
+    final components = latestPayment?.components ?? [];
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 14),
       padding: const EdgeInsets.all(10),
@@ -238,11 +238,20 @@ class _MemberDetailScreenState extends ConsumerState<MemberDetailScreen> {
       ),
       child: Column(
         children: [
-          _buildInfoRow('Gym Access', '₹${subtotal.toInt()}'),
+          if (components.isNotEmpty)
+            ...components.map((c) => Column(
+                  children: [
+                    _buildInfoRow(c.name, '₹${c.price.toInt()}'),
+                    const Divider(height: 16, color: AppColors.border),
+                  ],
+                ))
+          else ...[
+            _buildInfoRow('Base Membership', '₹${((member.planPrice ?? 0) / 1.18).toInt()}'),
+            const Divider(height: 16, color: AppColors.border),
+          ],
+          _buildInfoRow('GST 18% (Included)', '₹${(latestPayment?.gstAmount ?? ((member.planPrice ?? 0) - (member.planPrice ?? 0) / 1.18)).toInt()}'),
           const Divider(height: 16, color: AppColors.border),
-          _buildInfoRow('GST 18%', '₹${gst.toInt()}'),
-          const Divider(height: 16, color: AppColors.border),
-          _buildInfoRow('Total', '₹${(member.planPrice ?? 1298).toInt()}', isTotal: true),
+          _buildInfoRow('Total Paid', '₹${(member.planPrice ?? 0).toInt()}', isTotal: true),
         ],
       ),
     );
@@ -311,9 +320,9 @@ class _MemberDetailScreenState extends ConsumerState<MemberDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Monthly Renewal', style: AppTextStyles.label.copyWith(fontSize: 11, fontWeight: FontWeight.w600)),
+                Text(payment.planName, style: AppTextStyles.label.copyWith(fontSize: 11, fontWeight: FontWeight.w600)),
                 Text(
-                  '${DateFormatter.format(payment.date)} · ${payment.method.toUpperCase()} · #${payment.invoiceNumber.substring(0, 4)}',
+                  '${DateFormatter.format(payment.date)} · ${payment.method.toUpperCase()} · #${payment.invoiceNumber}',
                   style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 1),

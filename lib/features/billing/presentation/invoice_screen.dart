@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../../members/viewmodel/members_viewmodel.dart';
 import '../../payments/viewmodel/payments_viewmodel.dart';
 import '../../../data/models/member.dart';
@@ -17,6 +18,7 @@ class InvoiceScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final owner = ref.watch(authProvider).owner;
     final member = ref.watch(membersProvider).firstWhereOrNull((m) => m.memberId == memberId);
     final payments = ref.watch(memberPaymentsProvider(memberId));
     final latestPayment = payments.isNotEmpty ? payments.first : null;
@@ -87,8 +89,21 @@ class InvoiceScreen extends ConsumerWidget {
   }
 
   Widget _buildInvoiceCard(Member member, Payment? payment) {
-    final subtotal = (payment?.amount ?? 1298) / 1.18;
-    final gst = (payment?.amount ?? 1298) - subtotal;
+    if (payment == null) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 14),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.bg3,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: const Center(child: Text('No payment record found', style: TextStyle(color: AppColors.textSecondary))),
+      );
+    }
+
+    final components = payment.components;
+    final expiryDate = payment.date.add(Duration(days: payment.durationMonths * 30));
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 14),
@@ -112,41 +127,46 @@ class InvoiceScreen extends ConsumerWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Raj's Fitness", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.orange)),
+                  Text(owner?.gymName ?? "IronM Fitness", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.orange)),
                   const SizedBox(height: 2),
-                  Text('Sector 14, Gurugram · GSTIN 07ABC...', style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.textSecondary)),
+                  Text('${owner?.address ?? "Premium Gym Management"} · GSTIN ${owner?.gstin ?? "N/A"}', 
+                    style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.textSecondary)),
                 ],
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   const Text('INVOICE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.orange)),
-                  Text('#${payment?.invoiceNumber ?? "INV-2026-0142"}', style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.textSecondary)),
+                  Text('#${payment.invoiceNumber}', style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.textSecondary)),
                 ],
               ),
             ],
           ),
           const Padding(padding: EdgeInsets.symmetric(vertical: 7), child: Divider(color: AppColors.border)),
           _buildInvRow('Member', member.name),
-          _buildInvRow('Date', payment != null ? DateFormat('dd MMM yyyy').format(payment.date) : 'N/A'),
-          _buildInvRow('Period', payment != null ? '${DateFormat('dd MMM').format(payment.date)} – ${DateFormat('dd MMM yyyy').format(payment.date.add(const Duration(days: 30)))}' : 'N/A'),
+          _buildInvRow('Date', DateFormat('dd MMM yyyy').format(payment.date)),
+          _buildInvRow('Period', '${DateFormat('dd MMM').format(payment.date)} – ${member.expiryDate != null ? DateFormat('dd MMM yyyy').format(member.expiryDate!) : 'N/A'}'),
           const Padding(padding: EdgeInsets.symmetric(vertical: 7), child: Divider(color: AppColors.border)),
-          _buildInvRow('Gym Access', '₹${subtotal.toStringAsFixed(2)}'),
-          _buildInvRow('Locker', '₹150.00'),
-          _buildInvRow('Steam Room', '₹150.00'),
+          if (components.isNotEmpty)
+            ...components.map((c) => _buildInvRow(c.name, '₹${c.price.toStringAsFixed(2)}'))
+          else
+            _buildInvRow(payment.planName, '₹${payment.subtotal.toStringAsFixed(2)}'),
           const Padding(padding: EdgeInsets.symmetric(vertical: 7), child: Divider(color: AppColors.border)),
-          _buildInvRow('Subtotal', '₹${(subtotal + 300).toStringAsFixed(2)}'),
-          _buildInvRow('GST @ 18%', '₹${gst.toStringAsFixed(2)}'),
+          _buildInvRow('Subtotal', '₹${payment.subtotal.toStringAsFixed(2)}'),
+          _buildInvRow('GST @ 18% (Inc)', '₹${payment.gstAmount.toStringAsFixed(2)}'),
           const SizedBox(height: 6),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Total Due', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-              Text('₹${payment?.amount.toStringAsFixed(2) ?? "1,298.00"}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.orange)),
+              const Text('Total Paid', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+              Text('₹${payment.amount.toStringAsFixed(2)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.orange)),
             ],
           ),
           const Padding(padding: EdgeInsets.symmetric(vertical: 7), child: Divider(color: AppColors.border)),
-          Text('HDFC · A/C 1234567890 · IFSC HDFC0001234', style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.textSecondary)),
+          Text('Bank: ${owner?.bankName ?? "N/A"} · A/C ${owner?.accountNumber ?? "N/A"} · IFSC ${owner?.ifsc ?? "N/A"}', 
+            style: AppTextStyles.label.copyWith(fontSize: 8, color: AppColors.textMuted)),
+          const SizedBox(height: 4),
+          Text('Transaction ID: ${payment.id.substring(0, 8).toUpperCase()}', style: AppTextStyles.label.copyWith(fontSize: 8, color: AppColors.textMuted)),
         ],
       ),
     );

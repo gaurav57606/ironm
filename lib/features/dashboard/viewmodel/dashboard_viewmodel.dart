@@ -2,9 +2,12 @@
 // 🔒 LOCKED — DashboardViewModel | Verified: 2026-04-24 | DO NOT EDIT
 // ═══════════════════════════════════════════════════════════════════
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:isar/isar.dart';
 import '../../../data/models/member.dart';
 import '../../../data/repositories/member_repository.dart';
 import '../../../data/repositories/payment_repository.dart';
+import '../../../core/providers/database_provider.dart';
 
 class DashboardStats {
   final int totalMembers;
@@ -24,32 +27,35 @@ class DashboardStats {
   });
 }
 
-final dashboardStatsProvider = FutureProvider.autoDispose<DashboardStats>((ref) async {
-  final memberRepo  = ref.watch(memberRepositoryProvider);
-  final paymentRepo = ref.watch(paymentRepositoryProvider);
 
-  final members  = await memberRepo.getAll();
-  final payments = await paymentRepo.getAll();
+final dashboardStatsProvider = StreamProvider.autoDispose<DashboardStats>((ref) {
+  final isar = ref.watch(isarProvider);
+  if (isar == null) return Stream.value(const DashboardStats());
 
-  final nonArchived = members.where((m) => !m.archived).toList();
-  final now = DateTime.now();
+  final membersStream = isar.members.where().watch(fireImmediately: true);
+  final paymentsStream = isar.payments.where().watch(fireImmediately: true);
 
-  final active   = nonArchived.where((m) => m.status == MemberStatus.active).length;
-  final expiring = nonArchived.where((m) => m.status == MemberStatus.expiring).length;
-  final expired  = nonArchived.where((m) => m.status == MemberStatus.expired).length;
+  return Rx.combineLatest2(membersStream, paymentsStream, (members, payments) {
+    final nonArchived = members.where((m) => !m.archived).toList();
+    final now = DateTime.now();
 
-  final monthlyRev = payments
-      .where((p) => p.date.month == now.month && p.date.year == now.year)
-      .fold(0.0, (s, p) => s + p.amount);
+    final active   = nonArchived.where((m) => m.getStatus(now) == MemberStatus.active).length;
+    final expiring = nonArchived.where((m) => m.getStatus(now) == MemberStatus.expiring).length;
+    final expired  = nonArchived.where((m) => m.getStatus(now) == MemberStatus.expired).length;
 
-  final totalRev = payments.fold(0.0, (s, p) => s + p.amount);
+    final monthlyRev = payments
+        .where((p) => p.date.month == now.month && p.date.year == now.year)
+        .fold(0.0, (s, p) => s + p.amount);
 
-  return DashboardStats(
-    totalMembers:    nonArchived.length,
-    activeMembers:   active,
-    expiringMembers: expiring,
-    expiredMembers:  expired,
-    monthlyRevenue:  monthlyRev,
-    totalRevenue:    totalRev,
-  );
+    final totalRev = payments.fold(0.0, (s, p) => s + p.amount);
+
+    return DashboardStats(
+      totalMembers:    nonArchived.length,
+      activeMembers:   active,
+      expiringMembers: expiring,
+      expiredMembers:  expired,
+      monthlyRevenue:  monthlyRev,
+      totalRevenue:    totalRev,
+    );
+  });
 });

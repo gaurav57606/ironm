@@ -44,6 +44,7 @@ dependencies:
   share_plus: ^10.0.0
   flutter_local_notifications: ^17.2.2
   collection: ^1.19.1
+  rxdart: ^0.28.0
 
 
 

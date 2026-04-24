@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../../members/viewmodel/members_viewmodel.dart';
 import '../viewmodel/dashboard_viewmodel.dart';
 import '../../../shared/widgets/status_bar_wrapper.dart';
@@ -32,7 +33,7 @@ class DashboardScreen extends ConsumerWidget {
         body: StatusBarWrapper(
           child: Column(
             children: [
-              _buildHeader(),
+          _buildHeader(context, ref),
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.only(bottom: 24),
@@ -64,7 +65,7 @@ class DashboardScreen extends ConsumerWidget {
                         context, 'Due Today', '/members?filter=due-today'),
                     _buildDueTodayList(members),
                     _buildSectionHeader(context, 'This Month', null),
-                    const RevenueMiniBars(revenue: 42800, trend: 12),
+                    RevenueMiniBars(revenue: stats.monthlyRevenue, trend: 12),
                   ],
                 ),
               ),
@@ -75,7 +76,8 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context, WidgetRef ref) {
+    final owner = ref.watch(authProvider).owner;
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
       child: Row(
@@ -87,7 +89,7 @@ class DashboardScreen extends ConsumerWidget {
               Text('Good morning',
                   style: AppTextStyles.label
                       .copyWith(color: AppColors.textSecondary, fontSize: 11)),
-              Text("Raj's Fitness",
+              Text(owner?.gymName ?? "IronM Fitness",
                   style: AppTextStyles.h2.copyWith(fontSize: 18)),
               Text(
                 DateFormat('EEEE, d MMMM yyyy').format(DateTime.now()),
@@ -104,8 +106,8 @@ class DashboardScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(11),
             ),
             alignment: Alignment.center,
-            child: const Text('R',
-                style: TextStyle(
+            child: Text(owner?.ownerName.isNotEmpty == true ? owner!.ownerName[0].toUpperCase() : 'I',
+                style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
                     fontSize: 16)),
@@ -226,7 +228,7 @@ class DashboardScreen extends ConsumerWidget {
   Widget _buildDueTodayList(List members) {
     final now = DateTime.now();
     final dueToday =
-        members.where((m) => m.getDaysRemaining(now) <= 3).take(2).toList();
+        members.where((m) => m.expiryDate != null && m.getDaysRemaining(now) == 0).toList();
 
     if (dueToday.isEmpty) {
       return Container(
@@ -295,7 +297,7 @@ class DashboardScreen extends ConsumerWidget {
                     style: AppTextStyles.body
                         .copyWith(fontSize: 12, fontWeight: FontWeight.w600)),
                 Text(
-                    '${member.planName ?? "Monthly"} · ₹${member.planPrice ?? 1298}',
+                    '${member.planName ?? "Monthly"} Membership',
                     style: AppTextStyles.label
                         .copyWith(fontSize: 9, color: AppColors.textSecondary)),
               ],

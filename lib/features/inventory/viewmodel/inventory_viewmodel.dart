@@ -5,12 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/product.dart';
 import '../../../data/repositories/product_repository.dart';
 
+import '../../../core/providers/database_provider.dart';
+import 'package:isar/isar.dart';
+
 // ── Products stream ─────────────────────────────────────────────────
-final productsStreamProvider = StreamProvider.autoDispose<List<Product>>((ref) async* {
-  final repo = ref.watch(productRepositoryProvider);
-  // IsarProductRepository.getAll() returns Future<List<Product>>
-  // We can convert it to a stream or just use a FutureProvider
-  yield await repo.getAll();
+final productsStreamProvider = StreamProvider.autoDispose<List<Product>>((ref) {
+  final isar = ref.watch(isarProvider);
+  if (isar == null) return const Stream.empty();
+  return isar.products.where().watch(fireImmediately: true);
 });
 
 // Alias for compatibility with older UI

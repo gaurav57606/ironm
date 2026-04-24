@@ -2,20 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:collection/collection.dart';
+import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../shared/widgets/status_bar_wrapper.dart';
 import '../viewmodel/attendance_viewmodel.dart';
 import '../../members/viewmodel/members_viewmodel.dart';
 import '../../../data/models/attendance.dart';
+import '../../../data/models/member.dart';
 
-class AttendanceScreen extends ConsumerWidget {
+class AttendanceScreen extends ConsumerStatefulWidget {
   const AttendanceScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AttendanceScreen> createState() => _AttendanceScreenState();
+}
+
+class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
+  DateTime _selectedDate = DateTime.now();
+
+  @override
+  Widget build(BuildContext context) {
     final attendance = ref.watch(attendanceProvider);
     final members = ref.watch(membersProvider);
+
+    // Filter attendance for the selected date
+    final filteredAttendance = attendance.where((a) {
+      return a.checkInTime.year == _selectedDate.year &&
+          a.checkInTime.month == _selectedDate.month &&
+          a.checkInTime.day == _selectedDate.day;
+    }).toList();
 
     return Container(
       decoration: const BoxDecoration(color: AppColors.bg),
@@ -27,15 +44,15 @@ class AttendanceScreen extends ConsumerWidget {
               _buildAppBar(context),
               _buildDateSelector(),
               Expanded(
-                child: attendance.isEmpty
+                child: filteredAttendance.isEmpty
                     ? _buildEmptyState()
                     : ListView.separated(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 14, vertical: 10),
-                        itemCount: attendance.length,
+                        itemCount: filteredAttendance.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 8),
                         itemBuilder: (ctx, i) {
-                          final record = attendance[i];
+                          final record = filteredAttendance[i];
                           final member = members.firstWhereOrNull(
                               (m) => m.memberId == record.memberId);
                           return _buildAttendanceTile(record, member);
@@ -44,6 +61,11 @@ class AttendanceScreen extends ConsumerWidget {
               ),
             ],
           ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _showCheckInSheet(context, members),
+          backgroundColor: AppColors.orange,
+          child: const Icon(Icons.add_task_rounded, color: Colors.white),
         ),
       ),
     );
@@ -58,7 +80,17 @@ class AttendanceScreen extends ConsumerWidget {
           const SizedBox(width: 12),
           Text('Attendance', style: AppTextStyles.h2.copyWith(fontSize: 20)),
           const Spacer(),
-          _buildIconButton(Icons.calendar_month_rounded, () {}),
+          _buildIconButton(Icons.calendar_month_rounded, () async {
+            final picked = await showDatePicker(
+              context: context,
+              initialDate: _selectedDate,
+              firstDate: DateTime(2024),
+              lastDate: DateTime(2026),
+            );
+            if (picked != null) {
+              setState(() => _selectedDate = picked);
+            }
+          }),
         ],
       ),
     );
@@ -87,35 +119,42 @@ class AttendanceScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: List.generate(7, (index) {
-          final isSelected = index == 3; // Mocking today
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(
-              color: isSelected ? AppColors.orange : AppColors.bg3,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                  color: isSelected ? AppColors.orange : AppColors.border),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  ['M', 'T', 'W', 'T', 'F', 'S', 'S'][index],
-                  style: TextStyle(
-                    fontSize: 7,
-                    fontWeight: FontWeight.w700,
-                    color: isSelected ? Colors.white : AppColors.textMuted,
+          final date = DateTime.now().subtract(Duration(days: 6 - index));
+          final isSelected = date.day == _selectedDate.day &&
+                             date.month == _selectedDate.month &&
+                             date.year == _selectedDate.year;
+          
+          return GestureDetector(
+            onTap: () => setState(() => _selectedDate = date),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.orange : AppColors.bg3,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                    color: isSelected ? AppColors.orange : AppColors.border),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    DateFormat('E').format(date).substring(0, 1),
+                    style: TextStyle(
+                      fontSize: 7,
+                      fontWeight: FontWeight.w700,
+                      color: isSelected ? Colors.white : AppColors.textMuted,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${9 + index}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: isSelected ? Colors.white : AppColors.textPrimary,
+                  const SizedBox(height: 2),
+                  Text(
+                    '${date.day}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: isSelected ? Colors.white : AppColors.textPrimary,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         }),
@@ -131,14 +170,14 @@ class AttendanceScreen extends ConsumerWidget {
           Icon(Icons.fact_check_rounded,
               size: 48, color: AppColors.textMuted.withValues(alpha: 0.3)),
           const SizedBox(height: 12),
-          Text('No attendance records found',
+          Text('No records for ${DateFormat('dd MMM').format(_selectedDate)}',
               style: AppTextStyles.label.copyWith(color: AppColors.textMuted)),
         ],
       ),
     );
   }
 
-  Widget _buildAttendanceTile(Attendance record, dynamic member) {
+  Widget _buildAttendanceTile(Attendance record, Member? member) {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -173,7 +212,7 @@ class AttendanceScreen extends ConsumerWidget {
                     style: AppTextStyles.body
                         .copyWith(fontSize: 12, fontWeight: FontWeight.w600)),
                 Text(
-                  'Checked in at 06:42 AM', // Mocking check in time
+                  'Checked in at ${DateFormat('hh:mm a').format(record.checkInTime)}',
                   style: AppTextStyles.label
                       .copyWith(fontSize: 9, color: AppColors.textMuted),
                 ),
@@ -213,5 +252,81 @@ class AttendanceScreen extends ConsumerWidget {
       ),
     );
   }
+
+  void _showCheckInSheet(BuildContext context, List<Member> members) {
+    final searchController = TextEditingController();
+    List<Member> filtered = members.where((m) => m.getStatus(DateTime.now()) != MemberStatus.expired).toList();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) => Container(
+          height: MediaQuery.of(context).size.height * 0.7,
+          decoration: const BoxDecoration(
+            color: AppColors.bg,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: TextField(
+                  controller: searchController,
+                  autofocus: true,
+                  onChanged: (val) {
+                    setSheetState(() {
+                      filtered = members.where((m) => 
+                        m.name.toLowerCase().contains(val.toLowerCase()) ||
+                        (m.phone?.contains(val) ?? false)
+                      ).toList();
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Search member to check in...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: filtered.length,
+                  itemBuilder: (context, i) {
+                    final m = filtered[i];
+                    return ListTile(
+                      leading: CircleAvatar(child: Text(m.name[0])),
+                      title: Text(m.name),
+                      subtitle: Text(m.phone ?? 'No Phone'),
+                      trailing: const Icon(Icons.login_rounded, color: AppColors.orange),
+                      onTap: () async {
+                        final attendance = Attendance(
+                          memberId: m.memberId,
+                          checkInTime: DateTime.now(),
+                        );
+                        await ref.read(attendanceViewModelProvider.notifier).markAttendance(attendance);
+                        if (context.mounted) Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
+
 

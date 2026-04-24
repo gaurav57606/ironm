@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import '../viewmodel/notifications_viewmodel.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_text_styles.dart';
+import '../../../shared/widgets/status_bar_wrapper.dart';
 
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
@@ -10,48 +9,74 @@ class NotificationsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final alertsAsync = ref.watch(expiringMembersProvider);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF1a1a2e),
-      appBar: AppBar(
-        title: const Text('Alerts', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+    return Container(
+      decoration: const BoxDecoration(color: AppColors.bg),
+      child: Scaffold(
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: alertsAsync.when(
-        data: (alerts) {
-          if (alerts.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.check_circle_outline, color: Colors.green.withValues(alpha: 0.5), size: 80),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'All memberships are active',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Members expiring in the next 30 days\nwill appear here',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 14),
-                  ),
-                ],
+        body: StatusBarWrapper(
+          child: Column(
+            children: [
+              _buildAppBar(context),
+              Expanded(
+                child: alertsAsync.when(
+                  data: (alerts) {
+                    if (alerts.isEmpty) {
+                      return _buildEmptyState();
+                    }
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      itemCount: alerts.length,
+                      itemBuilder: (context, index) => ExpiryAlertCard(alert: alerts[index]),
+                    );
+                  },
+                  loading: () => const Center(child: CircularProgressIndicator(color: AppColors.orange)),
+                  error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: AppColors.expired))),
+                ),
               ),
-            );
-          }
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: alerts.length,
-            itemBuilder: (context, index) {
-              return ExpiryAlertCard(alert: alerts[index]);
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
+  Widget _buildAppBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => context.pop(),
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: AppColors.bg3,
+                borderRadius: BorderRadius.circular(9),
+                border: Border.all(color: AppColors.border),
+              ),
+              alignment: Alignment.center,
+              child: const Icon(Icons.chevron_left, size: 16, color: AppColors.textPrimary),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text('Alerts', style: AppTextStyles.h2.copyWith(fontSize: 18)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.check_circle_outline, color: AppColors.active.withValues(alpha: 0.5), size: 64),
+          const SizedBox(height: 16),
+          Text('All memberships active', style: AppTextStyles.h3.copyWith(color: AppColors.textSecondary)),
+          const SizedBox(height: 8),
+          Text('Expirations will appear here', style: AppTextStyles.label.copyWith(color: AppColors.textMuted)),
+        ],
       ),
     );
   }
@@ -59,7 +84,6 @@ class NotificationsScreen extends ConsumerWidget {
 
 class ExpiryAlertCard extends StatelessWidget {
   final ExpiryAlert alert;
-
   const ExpiryAlertCard({super.key, required this.alert});
 
   @override
@@ -67,60 +91,47 @@ class ExpiryAlertCard extends StatelessWidget {
     final member = alert.member;
     final days = alert.daysUntilExpiry;
 
-    Color badgeColor;
+    Color statusColor;
     String statusText;
 
     if (days < 0) {
-      badgeColor = const Color(0xFFe94560); // Red
+      statusColor = AppColors.expired;
       statusText = 'Expired';
     } else if (days <= 3) {
-      badgeColor = Colors.orange;
-      statusText = '$days days left';
-    } else if (days <= 7) {
-      badgeColor = Colors.yellow[700]!;
+      statusColor = AppColors.orange;
       statusText = '$days days left';
     } else {
-      badgeColor = Colors.green;
+      statusColor = AppColors.active;
       statusText = '$days days left';
     }
 
-    return Card(
-      color: const Color(0xFF16213e),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.only(bottom: 12),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.bg3,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        onTap: () => context.push('/members/${member.memberId}'),
-        title: Text(
-          member.name,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-        ),
+        contentPadding: EdgeInsets.zero,
+        onTap: () => context.push('/members/${member.id}'),
+        title: Text(member.name, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700, fontSize: 13)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Text(
-              member.phone ?? 'No phone',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 14),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Expires: ${member.expiryDate?.toLocal().toString().split(' ')[0] ?? 'N/A'}',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 12),
-            ),
+            Text(member.phone ?? 'No phone', style: AppTextStyles.label.copyWith(fontSize: 10, color: AppColors.textSecondary)),
           ],
         ),
         trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: badgeColor.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: badgeColor, width: 1),
+            color: statusColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: statusColor.withValues(alpha: 0.3)),
           ),
-          child: Text(
-            statusText,
-            style: TextStyle(color: badgeColor, fontWeight: FontWeight.bold, fontSize: 12),
-          ),
+          child: Text(statusText, style: AppTextStyles.label.copyWith(color: statusColor, fontSize: 9, fontWeight: FontWeight.w700)),
         ),
       ),
     );
