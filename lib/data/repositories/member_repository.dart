@@ -6,9 +6,12 @@ import '../models/member.dart';
 import '../../core/services/snapshot_builder.dart';
 import 'event_repository.dart';
 import 'i_event_repository.dart';
+// import 'web/web_member_repository.dart';
+// import '../../core/providers/web_data_store.dart';
 
 abstract class IMemberRepository {
   Future<List<Member>> getAll();
+  Stream<List<Member>> watchAll();
   Future<Member?> getById(String memberId);
   Future<void> save(Member member);
   Future<void> delete(String memberId);
@@ -36,9 +39,15 @@ class IsarMemberRepository implements IMemberRepository {
   }
 
   @override
+  Stream<List<Member>> watchAll() {
+    if (_isar == null) return const Stream.empty();
+    return _isar!.members.where().watch(fireImmediately: true);
+  }
+
+  @override
   Future<Member?> getById(String memberId) async {
     if (_isar == null) return null;
-    final member = await _isar.members.where().memberIdEqualTo(memberId).findFirst();
+    final member = await _isar.members.filter().memberIdEqualTo(memberId).findFirst();
     if (member != null && await _hmacService.verifyInstance(member)) {
       return member;
     }
@@ -58,7 +67,7 @@ class IsarMemberRepository implements IMemberRepository {
   Future<void> delete(String memberId) async {
     if (_isar == null) return;
     await _isar.writeTxn(() async {
-      await _isar.members.where().memberIdEqualTo(memberId).deleteAll();
+      await _isar.members.filter().memberIdEqualTo(memberId).deleteAll();
     });
   }
 
@@ -81,6 +90,13 @@ class IsarMemberRepository implements IMemberRepository {
 
 final memberRepositoryProvider = Provider<IMemberRepository>((ref) {
   final isar = ref.watch(isarProvider);
+  if (isar == null) {
+    final webStore = ref.watch(webDataStoreProvider);
+    if (webStore != null) {
+      // return WebMemberRepository(webStore);
+    }
+  }
+  
   final eventRepo = ref.watch(eventRepositoryProvider);
   final hmac = ref.watch(hmacServiceProvider);
   return IsarMemberRepository(isar, eventRepo, hmac);

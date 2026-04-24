@@ -21,13 +21,13 @@ class SyncStatusIndicator extends StatelessWidget {
             width: 6,
             height: 6,
             decoration: const BoxDecoration(
-              color: AppColors.active,
+              color: AppColors.orange,
               shape: BoxShape.circle,
             ),
           ),
           const SizedBox(width: 6),
           const Text(
-            'Online',
+            'Secured Local',
             style: TextStyle(
               fontSize: 9,
               fontWeight: FontWeight.w600,

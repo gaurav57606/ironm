@@ -12,10 +12,16 @@ import 'package:ironm/data/models/sale.dart';
 import 'package:ironm/data/models/owner_profile.dart';
 import 'package:ironm/data/models/invoice_sequence.dart';
 import 'package:ironm/data/models/app_settings.dart';
+import 'web_data_store.dart';
 
 final isarProvider = Provider<Isar?>((ref) => null);
 
-Future<Isar> initIsar() async {
+final webDataStoreProvider = Provider<WebDataStore?>((ref) {
+  // We'll initialize this in main and override it
+  return null;
+});
+
+Future<Isar?> initIsar() async {
   final schemas = [
     MemberSchema,
     PaymentSchema,
@@ -29,13 +35,20 @@ Future<Isar> initIsar() async {
     AppSettingsSchema,
   ];
 
-  if (kIsWeb) {
-    return Isar.open(schemas, directory: '');
-  } else {
-    final dir = await getApplicationDocumentsDirectory();
-    return Isar.open(
-      schemas,
-      directory: dir.path,
-    );
+  try {
+    if (kIsWeb) {
+      // Isar 3.x web support is limited and often fails in local dev or specific browsers.
+      // We'll return null here and let the repositories fall back to WebDataStore.
+      return null; 
+    } else {
+      final dir = await getApplicationDocumentsDirectory();
+      return await Isar.open(
+        schemas,
+        directory: dir.path,
+      );
+    }
+  } catch (e) {
+    debugPrint('Failed to initialize Isar: $e');
+    return null;
   }
 }

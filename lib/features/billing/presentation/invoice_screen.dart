@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
@@ -10,6 +11,7 @@ import '../../members/viewmodel/members_viewmodel.dart';
 import '../../payments/viewmodel/payments_viewmodel.dart';
 import '../../../data/models/member.dart';
 import '../../../data/models/payment.dart';
+import '../../../data/models/owner_profile.dart';
 import '../../../shared/widgets/status_bar_wrapper.dart';
 
 class InvoiceScreen extends ConsumerWidget {
@@ -39,11 +41,11 @@ class InvoiceScreen extends ConsumerWidget {
                 child: ListView(
                   padding: const EdgeInsets.only(bottom: 24),
                   children: [
-                    _buildInvoiceCard(member, latestPayment),
+                    _buildInvoiceCard(member, latestPayment, owner),
                     _buildSectionHeader('Payment Method'),
                     _buildPaymentMethodChips(latestPayment?.method ?? 'Cash'),
                     const SizedBox(height: 20),
-                    _buildShareButton(),
+                    _buildShareButton(member, latestPayment, owner),
                   ],
                 ),
               ),
@@ -88,7 +90,7 @@ class InvoiceScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInvoiceCard(Member member, Payment? payment) {
+  Widget _buildInvoiceCard(Member member, Payment? payment, OwnerProfile? owner) {
     if (payment == null) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 14),
@@ -103,7 +105,7 @@ class InvoiceScreen extends ConsumerWidget {
     }
 
     final components = payment.components;
-    final expiryDate = payment.date.add(Duration(days: payment.durationMonths * 30));
+    final expiryDate = DateTime(payment.date.year, payment.date.month + payment.durationMonths, payment.date.day);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 14),
@@ -230,12 +232,16 @@ class InvoiceScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildShareButton() {
+  Widget _buildShareButton(Member member, Payment? payment, OwnerProfile? owner) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 14),
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: () {},
+        onPressed: () {
+          if (payment == null) return;
+          final text = 'Hello ${member.name}, your payment of ₹${payment.amount.toInt()} for ${payment.planName} was successful. Invoice: #${payment.invoiceNumber}. Thank you for choosing ${owner?.gymName ?? "IronM Fitness"}!';
+          Share.share(text);
+        },
         icon: const Icon(Icons.share_outlined, size: 13),
         label: const Text('Share via WhatsApp'),
         style: ElevatedButton.styleFrom(

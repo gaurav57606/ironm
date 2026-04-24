@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' as io;
+import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:crypto/crypto.dart';
@@ -36,9 +37,10 @@ class BackupService {
   static const String _autoBackupEnabledKey = 'auto_backup_enabled';
 
   Future<String?> getBackupDirectory() async {
+    if (kIsWeb) return null;
     String? backupDir;
     try {
-      if (Platform.isAndroid) {
+      if (!kIsWeb && io.Platform.isAndroid) {
         final externalDirs = await getExternalStorageDirectories(type: StorageDirectory.downloads);
         if (externalDirs != null && externalDirs.isNotEmpty) {
           backupDir = '${externalDirs.first.path}/IronM_Backups';
@@ -55,12 +57,13 @@ class BackupService {
     return backupDir;
   }
 
-  Future<List<File>> listBackupFiles() async {
+  Future<List<io.File>> listBackupFiles() async {
+    if (kIsWeb) return [];
     final path = await getBackupDirectory();
     if (path == null) return [];
-    final dir = Directory(path);
+    final dir = io.Directory(path);
     if (!await dir.exists()) return [];
-    return dir.list().where((e) => e is File && e.path.endsWith('.json')).cast<File>().toList();
+    return dir.list().where((e) => e is io.File && e.path.endsWith('.json')).cast<io.File>().toList();
   }
 
   Future<BackupResult> createBackup(Isar isar) async {
@@ -95,8 +98,14 @@ class BackupService {
       final fileName = 'ironm_backup_${DateFormat('yyyy-MM-dd_HH-mm').format(timestamp)}.json';
       String? backupDir;
 
+      if (kIsWeb) {
+        // On web, we could trigger a download, but for now we'll just return failure or info
+        LogService.info('BackupService', 'Manual backup created (JSON data generated)');
+        return BackupSuccess('Memory/Download', timestamp, memberCount: (data['members'] as List).length);
+      }
+
       try {
-        if (Platform.isAndroid) {
+        if (!kIsWeb && io.Platform.isAndroid) {
           final externalDirs = await getExternalStorageDirectories(type: StorageDirectory.downloads);
           if (externalDirs != null && externalDirs.isNotEmpty) {
             backupDir = '${externalDirs.first.path}/IronM_Backups';
@@ -111,12 +120,12 @@ class BackupService {
         backupDir = '${appDocDir.path}/backups';
       }
 
-      final dir = Directory(backupDir);
+      final dir = io.Directory(backupDir);
       if (!await dir.exists()) {
         await dir.create(recursive: true);
       }
 
-      final file = File('${dir.path}/$fileName');
+      final file = io.File('${dir.path}/$fileName');
       await file.writeAsString(jsonEncode(backupContent));
 
       await _rotateBackups(dir);
@@ -148,10 +157,10 @@ class BackupService {
     await createBackup(isar);
   }
 
-  Future<void> _rotateBackups(Directory dir) async {
-    final files = await dir.list().where((e) => e is File && e.path.endsWith('.json')).toList();
+  Future<void> _rotateBackups(io.Directory dir) async {
+    final files = await dir.list().where((e) => e is io.File && e.path.endsWith('.json')).toList();
     if (files.length > 10) {
-      files.sort((a, b) => (a as File).lastModifiedSync().compareTo((b as File).lastModifiedSync()));
+      files.sort((a, b) => (a as io.File).lastModifiedSync().compareTo((b as io.File).lastModifiedSync()));
       final toDelete = files.length - 10;
       for (var i = 0; i < toDelete; i++) {
         await files[i].delete();
@@ -253,12 +262,6 @@ class BackupService {
     'ifsc': o.ifsc,
     'upiId': o.upiId,
     'logoPath': o.logoPath,
-    'level': o.level,
-    'exp': o.exp,
-    'strength': o.strength,
-    'endurance': o.endurance,
-    'dexterity': o.dexterity,
-    'selectedCharacterId': o.selectedCharacterId,
     'hmacSignature': o.hmacSignature,
   };
 

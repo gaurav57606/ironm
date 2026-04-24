@@ -96,7 +96,6 @@ class HmacService {
         'gymName': instance.gymName,
         'ownerName': instance.ownerName,
         'phone': instance.phone,
-        'level': instance.level,
       });
     } else if (instance is Payment) {
       return signData(instance.id, {
@@ -104,6 +103,7 @@ class HmacService {
         'amount': instance.amount,
         'date': instance.date.toIso8601String(),
         'method': instance.method,
+        'invoiceNumber': instance.invoiceNumber,
       });
     } else if (instance is Plan) {
       return signData(instance.id, {

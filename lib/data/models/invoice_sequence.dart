@@ -15,4 +15,14 @@ class InvoiceSequence {
     required this.prefix,
     this.lastNumber = 0,
   });
+
+  Map<String, dynamic> toJson() => {
+    'prefix': prefix,
+    'lastNumber': lastNumber,
+  };
+
+  factory InvoiceSequence.fromJson(Map<String, dynamic> json) => InvoiceSequence(
+    prefix: json['prefix'] ?? '',
+    lastNumber: json['lastNumber'] ?? 0,
+  );
 }

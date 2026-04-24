@@ -8,9 +8,16 @@ import 'package:isar/isar.dart';
 
 import 'core/services/notification_service.dart';
 
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'core/providers/web_data_store.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService.initialize();
+  
+  final prefs = await SharedPreferences.getInstance();
+  final webDataStore = WebDataStore(prefs);
 
 
   // Catch Flutter framework errors and log them
@@ -37,15 +44,18 @@ Future<void> main() async {
     LogService.error('IsarInitFailed', e, stack);
   }
 
-  if (isar == null) {
-    // Database failed — show blocking error screen. Do NOT run the app without persistence.
+  if (isar == null && !kIsWeb) {
+    // Database failed on native — show blocking error screen.
     runApp(_DatabaseErrorApp(error: isarError ?? 'Unknown database error'));
     return;
   }
 
   runApp(
     ProviderScope(
-      overrides: [isarProvider.overrideWithValue(isar)],
+      overrides: [
+        isarProvider.overrideWithValue(isar),
+        webDataStoreProvider.overrideWithValue(webDataStore),
+      ],
       child: const IronBookApp(),
     ),
   );
@@ -76,7 +86,7 @@ class _DatabaseErrorApp extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'IronM could not open its database.\nYour data is safe but the app cannot start.',
+                  'IronBook GM could not open its database.\nYour data is safe but the app cannot start.',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Color(0xFFa8a8b3), fontSize: 16),
                 ),

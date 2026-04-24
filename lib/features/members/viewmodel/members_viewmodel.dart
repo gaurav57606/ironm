@@ -16,9 +16,8 @@ part 'members_viewmodel.g.dart';
 
 // ── Stream Provider: all members live ──────────────────────────────
 final membersStreamProvider = StreamProvider.autoDispose<List<Member>>((ref) {
-  final isar = ref.watch(isarProvider);
-  if (isar == null) return const Stream.empty();
-  return isar.members.where().watch(fireImmediately: true);
+  final repo = ref.watch(memberRepositoryProvider);
+  return repo.watchAll();
 });
 
 // Alias for compatibility with older UI

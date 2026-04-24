@@ -12,16 +12,16 @@ import '../../../core/providers/database_provider.dart';
 
 // ── All payments stream ─────────────────────────────────────────────
 final paymentsStreamProvider = StreamProvider.autoDispose<List<Payment>>((ref) {
-  final isar = ref.watch(isarProvider);
-  if (isar == null) return const Stream.empty();
-  return isar.payments.where().watch(fireImmediately: true);
+  final repo = ref.watch(paymentRepositoryProvider);
+  return repo.watchAll();
 });
 
 // ── Payments for a single member ───────────────────────────────────
 final memberPaymentsProvider =
     Provider.autoDispose.family<List<Payment>, String>((ref, memberId) {
   final all = ref.watch(paymentsStreamProvider).value ?? [];
-  return all.where((p) => p.memberId == memberId).toList();
+  final filtered = all.where((p) => p.memberId == memberId).toList();
+  return filtered..sort((a, b) => b.date.compareTo(a.date));
 });
 
 
@@ -81,12 +81,20 @@ class RecordPaymentNotifier extends AsyncNotifier<void> {
         final base = (member.expiryDate != null && member.expiryDate!.isAfter(DateTime.now()))
             ? member.expiryDate!
             : DateTime.now();
-        member.expiryDate = DateTime(
-          base.year, base.month + durationMonths, base.day,
-        );
+        
+        // Correct month overflow handling
+        final targetMonth = base.month + durationMonths;
+        final yearOffset = (targetMonth - 1) ~/ 12;
+        final month = (targetMonth - 1) % 12 + 1;
+        final year = base.year + yearOffset;
+        
+        final lastDayOfTargetMonth = DateTime(year, month + 1, 0).day;
+        final day = base.day > lastDayOfTargetMonth ? lastDayOfTargetMonth : base.day;
+        member.expiryDate = DateTime(year, month, day);
         member.planId   = planId;
         member.planName = planName;
         member.lastUpdated = DateTime.now();
+        member.paymentIds.add(payment.id);
         await memberRepo.save(member);
       }
     });

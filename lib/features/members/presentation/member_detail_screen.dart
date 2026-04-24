@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:collection/collection.dart';
 import 'package:go_router/go_router.dart';
+import '../../auth/viewmodel/auth_viewmodel.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../shared/widgets/status_bar_wrapper.dart';
@@ -157,7 +159,10 @@ class _MemberDetailScreenState extends ConsumerState<MemberDetailScreen> {
           const SizedBox(width: 6),
           Expanded(child: _buildActionButton('Renew', false, () => showDialog(context: context, builder: (ctx) => RenewDialog(member: member)))),
           const SizedBox(width: 6),
-          Expanded(child: _buildActionButton('WhatsApp', false, () {})),
+          Expanded(child: _buildActionButton('WhatsApp', false, () {
+            final text = 'Hello ${member.name}, this is ${ref.read(authProvider).owner?.gymName ?? "IronM Fitness"}. Just checking in on your membership!';
+            Share.share(text);
+          })),
         ],
       ),
     );
@@ -246,12 +251,12 @@ class _MemberDetailScreenState extends ConsumerState<MemberDetailScreen> {
                   ],
                 ))
           else ...[
-            _buildInfoRow('Base Membership', '₹${((member.planPrice ?? 0) / 1.18).toInt()}'),
+            _buildInfoRow('Base Membership', '₹${(latestPayment?.subtotal ?? 0).toInt()}'),
             const Divider(height: 16, color: AppColors.border),
           ],
-          _buildInfoRow('GST 18% (Included)', '₹${(latestPayment?.gstAmount ?? ((member.planPrice ?? 0) - (member.planPrice ?? 0) / 1.18)).toInt()}'),
+          _buildInfoRow('GST 18% (Included)', '₹${(latestPayment?.gstAmount ?? 0).toInt()}'),
           const Divider(height: 16, color: AppColors.border),
-          _buildInfoRow('Total Paid', '₹${(member.planPrice ?? 0).toInt()}', isTotal: true),
+          _buildInfoRow('Total Paid', '₹${(latestPayment?.amount ?? 0).toInt()}', isTotal: true),
         ],
       ),
     );

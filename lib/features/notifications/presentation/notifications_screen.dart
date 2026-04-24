@@ -120,7 +120,7 @@ class ExpiryAlertCard extends StatelessWidget {
       ),
       child: ListTile(
         contentPadding: EdgeInsets.zero,
-        onTap: () => context.push('/members/${member.id}'),
+        onTap: () => context.push('/gym/member-details/${member.memberId}'),
         title: Text(member.name, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700, fontSize: 13)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

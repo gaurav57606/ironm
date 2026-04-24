@@ -15,7 +15,7 @@ extension GetInvoiceSequenceCollection on Isar {
 
 const InvoiceSequenceSchema = CollectionSchema(
   name: r'InvoiceSequence',
-  id: -8769776883567169139,
+  id: 3235190550556095,
   properties: {
     r'lastNumber': PropertySchema(
       id: 0,
@@ -35,7 +35,7 @@ const InvoiceSequenceSchema = CollectionSchema(
   idName: r'isarId',
   indexes: {
     r'prefix': IndexSchema(
-      id: -5274940836489658534,
+      id: 3277926788562192,
       name: r'prefix',
       unique: true,
       replace: false,

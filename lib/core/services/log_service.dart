@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:io' as io;
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
@@ -13,8 +14,9 @@ class LogService {
   static bool _isWriting = false;
 
   static Future<String> getLogFilePath() async {
+    if (kIsWeb) return '';
     final dir = await getApplicationDocumentsDirectory();
-    final logDir = Directory('${dir.path}/logs');
+    final logDir = io.Directory('${dir.path}/logs');
     if (!await logDir.exists()) {
       await logDir.create(recursive: true);
     }
@@ -37,18 +39,23 @@ class LogService {
     _isWriting = true;
 
     try {
+      if (kIsWeb) {
+        // ignore: avoid_print
+        print('[$timestamp] [$level] [$tag]: $message');
+        return;
+      }
       final path = await getLogFilePath();
-      final file = File(path);
+      final file = io.File(path);
 
       if (await file.exists() && await file.length() > _maxFileSize) {
-        final oldFile = File(path.replaceFirst(_logFileName, _oldLogFileName));
+        final oldFile = io.File(path.replaceFirst(_logFileName, _oldLogFileName));
         if (await oldFile.exists()) {
           await oldFile.delete();
         }
         await file.rename(oldFile.path);
       }
 
-      await file.writeAsString(entry, mode: FileMode.append, flush: true);
+      await file.writeAsString(entry, mode: io.FileMode.append, flush: true);
     } catch (e) {
       // Fallback to debugPrint if logging fails
       // ignore: avoid_print
@@ -61,7 +68,7 @@ class LogService {
   static Future<String> readLogs() async {
     try {
       final path = await getLogFilePath();
-      final file = File(path);
+      final file = io.File(path);
       if (await file.exists()) {
         return await file.readAsString();
       }
@@ -74,12 +81,12 @@ class LogService {
   static Future<void> clearLogs() async {
     try {
       final path = await getLogFilePath();
-      final file = File(path);
+      final file = io.File(path);
       if (await file.exists()) {
         await file.delete();
       }
       final oldPath = path.replaceFirst(_logFileName, _oldLogFileName);
-      final oldFile = File(oldPath);
+      final oldFile = io.File(oldPath);
       if (await oldFile.exists()) {
         await oldFile.delete();
       }

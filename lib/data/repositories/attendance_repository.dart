@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar/isar.dart';
 import '../../core/providers/database_provider.dart';
 import '../models/attendance.dart';
+// import 'web/web_attendance_repository.dart';
+// import '../../core/providers/web_data_store.dart';
 
 abstract class IAttendanceRepository {
   Future<List<Attendance>> getByMember(String memberId);
@@ -53,5 +55,11 @@ class IsarAttendanceRepository implements IAttendanceRepository {
 
 final attendanceRepositoryProvider = Provider<IAttendanceRepository>((ref) {
   final isar = ref.watch(isarProvider);
+  if (isar == null) {
+    final webStore = ref.watch(webDataStoreProvider);
+    if (webStore != null) {
+      // return WebAttendanceRepository(webStore);
+    }
+  }
   return IsarAttendanceRepository(isar);
 });

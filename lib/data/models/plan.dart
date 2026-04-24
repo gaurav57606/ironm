@@ -29,6 +29,24 @@ class Plan {
 
   @ignore
   double get totalPrice => components.fold(0, (sum, c) => sum + c.price);
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'durationMonths': durationMonths,
+    'components': components.map((e) => e.toJson()).toList(),
+    'active': active,
+    'hmacSignature': hmacSignature,
+  };
+
+  factory Plan.fromJson(Map<String, dynamic> json) => Plan(
+    id: json['id'] ?? '',
+    name: json['name'] ?? '',
+    durationMonths: json['durationMonths'] ?? 0,
+    components: (json['components'] as List?)?.map((e) => PlanComponent.fromJson(e)).toList() ?? [],
+    active: json['active'] ?? true,
+    hmacSignature: json['hmacSignature'] ?? '',
+  );
 }
 
 @embedded
@@ -42,4 +60,16 @@ class PlanComponent {
     this.name = '',
     this.price = 0.0,
   });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'price': price,
+  };
+
+  factory PlanComponent.fromJson(Map<String, dynamic> json) => PlanComponent(
+    id: json['id'] ?? '',
+    name: json['name'] ?? '',
+    price: (json['price'] as num?)?.toDouble() ?? 0.0,
+  );
 }

@@ -11,6 +11,9 @@ import '../../../core/services/notification_service.dart';
 import '../../../core/services/backup_service.dart';
 import '../../../core/providers/backup_provider.dart';
 import 'package:isar/isar.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part 'auth_viewmodel.g.dart';
 
 
 class AuthState {
@@ -57,17 +60,24 @@ class AuthState {
   }
 }
 
-class AuthNotifier extends StateNotifier<AuthState> {
-  final FlutterSecureStorage _storage;
-  final PinService _pinService;
-  final IsarSettingsRepository _settingsRepo;
-  final BackupService _backupService;
-  final Isar? _isar;
+@riverpod
+class AuthViewModel extends _$AuthViewModel {
+  late FlutterSecureStorage _storage;
+  late PinService _pinService;
+  late ISettingsRepository _settingsRepo;
+  late BackupService _backupService;
+  Isar? _isar;
 
-  AuthNotifier(this._storage, this._pinService, this._settingsRepo, this._backupService, this._isar)
+  @override
+  AuthState build() {
+    _storage = ref.watch(appSecureStorageProvider);
+    _pinService = ref.watch(pinServiceProvider);
+    _settingsRepo = ref.watch(settingsRepositoryProvider);
+    _backupService = ref.watch(backupServiceProvider);
+    _isar = ref.watch(isarProvider);
 
-      : super(AuthState(settings: AppSettings())) {
     _init();
+    return AuthState(settings: AppSettings());
   }
 
   Future<void> _init() async {
@@ -90,11 +100,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
 
     if (_isar != null && state.unlocked) {
-      NotificationService.checkAndNotifyExpiring(_isar);
-      _backupService.autoBackupIfDue(_isar);
+      NotificationService.checkAndNotifyExpiring(_isar!);
+      _backupService.autoBackupIfDue(_isar!);
     }
   }
-
 
   Future<void> completeOnboarding() async {
     await _storage.write(key: 'onboarding_done', value: 'true');
@@ -106,8 +115,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     if (result == AuthResult.success) {
       state = state.copyWith(unlocked: true, authAttempts: 0);
       if (_isar != null) {
-        NotificationService.checkAndNotifyExpiring(_isar);
-        _backupService.autoBackupIfDue(_isar);
+        NotificationService.checkAndNotifyExpiring(_isar!);
+        _backupService.autoBackupIfDue(_isar!);
       }
       return true;
     }
@@ -119,9 +128,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> verifyPin(String pin) => authenticate(pin: pin);
 
   Future<bool> login(String email, String password) async {
-    if (email.isNotEmpty && password.length >= 6) {
-      state = state.copyWith(isAuthenticated: true, authAttempts: 0);
-      return true;
+    state = state.copyWith(isLoading: true);
+    try {
+      final savedEmail = await _storage.read(key: 'auth_email');
+      final savedPassword = await _storage.read(key: 'auth_password');
+      
+      if (email == savedEmail && password == savedPassword) {
+        state = state.copyWith(isAuthenticated: true, authAttempts: 0, isLoading: false);
+        return true;
+      }
+    } finally {
+      state = state.copyWith(isLoading: false);
     }
     return false;
   }
@@ -131,13 +148,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String ownerName,
     String? phone,
   }) async {
-    final owner = OwnerProfile(
-      gymName: gymName,
-      ownerName: ownerName,
-      phone: phone ?? '',
-    );
-    await saveOwner(owner);
-    return true;
+    state = state.copyWith(isLoading: true);
+    try {
+      await _storage.write(key: 'auth_email', value: email);
+      await _storage.write(key: 'auth_password', value: password);
+      
+      final owner = OwnerProfile(
+        gymName: gymName,
+        ownerName: ownerName,
+        phone: phone ?? '',
+      );
+      await saveOwner(owner);
+      return true;
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
   }
 
   Future<void> signOut() async {
@@ -175,16 +200,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> sendPasswordReset(String email) async {
+    state = state.copyWith(isLoading: true);
+    // Mocking email behavior with a delay
     await Future.delayed(const Duration(seconds: 1));
+    state = state.copyWith(isLoading: false);
   }
 }
 
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final storage = ref.watch(appSecureStorageProvider);
-  final pinService = ref.watch(pinServiceProvider);
-  final settingsRepo = ref.watch(settingsRepositoryProvider);
-  final backupService = ref.watch(backupServiceProvider);
-  final isar = ref.watch(isarProvider);
-  return AuthNotifier(storage, pinService, settingsRepo, backupService, isar);
-});
+// Keep the old provider name for compatibility but refactor it to use the new notifier
+final authProvider = authViewModelProvider;
 

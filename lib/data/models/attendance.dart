@@ -16,4 +16,14 @@ class Attendance {
     required this.memberId,
     required this.checkInTime,
   });
+
+  Map<String, dynamic> toJson() => {
+    'memberId': memberId,
+    'checkInTime': checkInTime.toIso8601String(),
+  };
+
+  factory Attendance.fromJson(Map<String, dynamic> json) => Attendance(
+    memberId: json['memberId'] ?? '',
+    checkInTime: DateTime.parse(json['checkInTime']),
+  );
 }

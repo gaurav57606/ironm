@@ -4,13 +4,24 @@ import '../../core/providers/database_provider.dart';
 import '../../core/services/hmac_service.dart';
 import '../models/payment.dart';
 import '../models/invoice_sequence.dart';
+// import 'web/web_payment_repository.dart';
+// import '../../core/providers/web_data_store.dart';
 
-class IsarPaymentRepository {
+abstract class IPaymentRepository {
+  Future<List<Payment>> getAll();
+  Stream<List<Payment>> watchAll();
+  Future<void> save(Payment payment);
+  Future<InvoiceSequence> getNextInvoiceSequence(String prefix);
+  Future<void> updateInvoiceSequence(InvoiceSequence sequence);
+}
+
+class IsarPaymentRepository implements IPaymentRepository {
   final Isar? _isar;
   final HmacService _hmacService;
 
   IsarPaymentRepository(this._isar, this._hmacService);
 
+  @override
   Future<List<Payment>> getAll() async {
     if (_isar == null) return [];
     final payments = await _isar.payments.where().sortByDateDesc().findAll();
@@ -23,6 +34,13 @@ class IsarPaymentRepository {
     return verified;
   }
 
+  @override
+  Stream<List<Payment>> watchAll() {
+    if (_isar == null) return const Stream.empty();
+    return _isar.payments.where().sortByDateDesc().watch(fireImmediately: true);
+  }
+
+  @override
   Future<void> save(Payment payment) async {
     if (_isar == null) return;
     payment.hmacSignature = await _hmacService.signSnapshot(payment);
@@ -31,6 +49,7 @@ class IsarPaymentRepository {
     });
   }
 
+  @override
   Future<InvoiceSequence> getNextInvoiceSequence(String prefix) async {
     if (_isar == null) return InvoiceSequence(prefix: prefix);
     var sequence = await _isar.invoiceSequences.where().prefixEqualTo(prefix).findFirst();
@@ -43,6 +62,7 @@ class IsarPaymentRepository {
     return sequence;
   }
 
+  @override
   Future<void> updateInvoiceSequence(InvoiceSequence sequence) async {
     if (_isar == null) return;
     await _isar.writeTxn(() async {
@@ -51,8 +71,14 @@ class IsarPaymentRepository {
   }
 }
 
-final paymentRepositoryProvider = Provider<IsarPaymentRepository>((ref) {
+final paymentRepositoryProvider = Provider<IPaymentRepository>((ref) {
   final isar = ref.watch(isarProvider);
+  if (isar == null) {
+    final webStore = ref.watch(webDataStoreProvider);
+    if (webStore != null) {
+      // return WebPaymentRepository(webStore);
+    }
+  }
   final hmac = ref.watch(hmacServiceProvider);
   return IsarPaymentRepository(isar, hmac);
 });

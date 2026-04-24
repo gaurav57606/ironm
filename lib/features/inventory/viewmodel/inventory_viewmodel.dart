@@ -10,9 +10,8 @@ import 'package:isar/isar.dart';
 
 // ── Products stream ─────────────────────────────────────────────────
 final productsStreamProvider = StreamProvider.autoDispose<List<Product>>((ref) {
-  final isar = ref.watch(isarProvider);
-  if (isar == null) return const Stream.empty();
-  return isar.products.where().watch(fireImmediately: true);
+  final repo = ref.watch(productRepositoryProvider);
+  return repo.watchAll();
 });
 
 // Alias for compatibility with older UI

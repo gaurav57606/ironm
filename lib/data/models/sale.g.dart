@@ -15,7 +15,7 @@ extension GetSaleCollection on Isar {
 
 const SaleSchema = CollectionSchema(
   name: r'Sale',
-  id: 2760258395233294300,
+  id: 4055423282551054,
   properties: {
     r'date': PropertySchema(
       id: 0,
@@ -61,7 +61,7 @@ const SaleSchema = CollectionSchema(
   idName: r'isarId',
   indexes: {
     r'id': IndexSchema(
-      id: -3268401673993471357,
+      id: 1211655477508376,
       name: r'id',
       unique: true,
       replace: false,
@@ -74,7 +74,7 @@ const SaleSchema = CollectionSchema(
       ],
     ),
     r'date': IndexSchema(
-      id: -7552997827385218417,
+      id: 4042347342473032,
       name: r'date',
       unique: false,
       replace: false,
@@ -87,7 +87,7 @@ const SaleSchema = CollectionSchema(
       ],
     ),
     r'invoiceNumber': IndexSchema(
-      id: -6231821761165001198,
+      id: 1160123115764574,
       name: r'invoiceNumber',
       unique: false,
       replace: false,
@@ -1592,7 +1592,7 @@ extension SaleQueryProperty on QueryBuilder<Sale, Sale, QQueryProperty> {
 
 const SaleItemSchema = Schema(
   name: r'SaleItem',
-  id: 8503636501889557541,
+  id: 840405414062037,
   properties: {
     r'price': PropertySchema(
       id: 0,

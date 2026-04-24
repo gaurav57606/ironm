@@ -18,14 +18,6 @@ class OwnerProfile {
   String? upiId;
   String? logoPath;
 
-  // Gamification stats (from version0)
-  late int level;
-  late int exp;
-  late double strength;
-  late double endurance;
-  late double dexterity;
-  late String selectedCharacterId;
-
   late String hmacSignature;
 
   OwnerProfile({
@@ -39,12 +31,34 @@ class OwnerProfile {
     this.ifsc,
     this.upiId,
     this.logoPath,
-    this.level = 1,
-    this.exp = 0,
-    this.strength = 0.5,
-    this.endurance = 0.5,
-    this.dexterity = 0.5,
-    this.selectedCharacterId = 'warrior',
     this.hmacSignature = '',
   });
+
+  Map<String, dynamic> toJson() => {
+    'gymName': gymName,
+    'ownerName': ownerName,
+    'phone': phone,
+    'address': address,
+    'gstin': gstin,
+    'bankName': bankName,
+    'accountNumber': accountNumber,
+    'ifsc': ifsc,
+    'upiId': upiId,
+    'logoPath': logoPath,
+    'hmacSignature': hmacSignature,
+  };
+
+  factory OwnerProfile.fromJson(Map<String, dynamic> json) => OwnerProfile(
+    gymName: json['gymName'] ?? '',
+    ownerName: json['ownerName'] ?? '',
+    phone: json['phone'] ?? '',
+    address: json['address'] ?? '',
+    gstin: json['gstin'],
+    bankName: json['bankName'],
+    accountNumber: json['accountNumber'],
+    ifsc: json['ifsc'],
+    upiId: json['upiId'],
+    logoPath: json['logoPath'],
+    hmacSignature: json['hmacSignature'] ?? '',
+  );
 }

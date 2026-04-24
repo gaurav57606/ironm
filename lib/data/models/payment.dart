@@ -51,6 +51,42 @@ class Payment {
     required this.durationMonths,
     this.hmacSignature = '',
   });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'memberId': memberId,
+    'date': date.toIso8601String(),
+    'amount': amount,
+    'method': method,
+    'reference': reference,
+    'planId': planId,
+    'planName': planName,
+    'components': components.map((e) => e.toJson()).toList(),
+    'invoiceNumber': invoiceNumber,
+    'subtotal': subtotal,
+    'gstAmount': gstAmount,
+    'gstRate': gstRate,
+    'durationMonths': durationMonths,
+    'hmacSignature': hmacSignature,
+  };
+
+  factory Payment.fromJson(Map<String, dynamic> json) => Payment(
+    id: json['id'] ?? '',
+    memberId: json['memberId'] ?? '',
+    date: DateTime.parse(json['date']),
+    amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+    method: json['method'] ?? '',
+    reference: json['reference'],
+    planId: json['planId'] ?? '',
+    planName: json['planName'] ?? '',
+    components: (json['components'] as List?)?.map((e) => PlanComponentSnapshot.fromJson(e)).toList() ?? [],
+    invoiceNumber: json['invoiceNumber'] ?? '',
+    subtotal: (json['subtotal'] as num?)?.toDouble() ?? 0.0,
+    gstAmount: (json['gstAmount'] as num?)?.toDouble() ?? 0.0,
+    gstRate: (json['gstRate'] as num?)?.toDouble() ?? 0.0,
+    durationMonths: json['durationMonths'] ?? 0,
+    hmacSignature: json['hmacSignature'] ?? '',
+  );
 }
 
 @embedded
@@ -62,4 +98,14 @@ class PlanComponentSnapshot {
     this.name = '',
     this.price = 0.0,
   });
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'price': price,
+  };
+
+  factory PlanComponentSnapshot.fromJson(Map<String, dynamic> json) => PlanComponentSnapshot(
+    name: json['name'] ?? '',
+    price: (json['price'] as num?)?.toDouble() ?? 0.0,
+  );
 }

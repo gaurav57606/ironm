@@ -15,7 +15,7 @@ extension GetProductCollection on Isar {
 
 const ProductSchema = CollectionSchema(
   name: r'Product',
-  id: -6222113721139403729,
+  id: 1860963886621052,
   properties: {
     r'category': PropertySchema(
       id: 0,
@@ -32,15 +32,25 @@ const ProductSchema = CollectionSchema(
       name: r'id',
       type: IsarType.string,
     ),
-    r'name': PropertySchema(
+    r'minStock': PropertySchema(
       id: 3,
+      name: r'minStock',
+      type: IsarType.long,
+    ),
+    r'name': PropertySchema(
+      id: 4,
       name: r'name',
       type: IsarType.string,
     ),
     r'price': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'price',
       type: IsarType.double,
+    ),
+    r'stock': PropertySchema(
+      id: 6,
+      name: r'stock',
+      type: IsarType.long,
     )
   },
   estimateSize: _productEstimateSize,
@@ -50,7 +60,7 @@ const ProductSchema = CollectionSchema(
   idName: r'isarId',
   indexes: {
     r'id': IndexSchema(
-      id: -3268401673993471357,
+      id: 1211655477508376,
       name: r'id',
       unique: true,
       replace: false,
@@ -63,7 +73,7 @@ const ProductSchema = CollectionSchema(
       ],
     ),
     r'category': IndexSchema(
-      id: -7560358558326323820,
+      id: 5688815656108620,
       name: r'category',
       unique: false,
       replace: false,
@@ -105,8 +115,10 @@ void _productSerialize(
   writer.writeString(offsets[0], object.category);
   writer.writeLong(offsets[1], object.iconCodePoint);
   writer.writeString(offsets[2], object.id);
-  writer.writeString(offsets[3], object.name);
-  writer.writeDouble(offsets[4], object.price);
+  writer.writeLong(offsets[3], object.minStock);
+  writer.writeString(offsets[4], object.name);
+  writer.writeDouble(offsets[5], object.price);
+  writer.writeLong(offsets[6], object.stock);
 }
 
 Product _productDeserialize(
@@ -117,10 +129,12 @@ Product _productDeserialize(
 ) {
   final object = Product(
     category: reader.readString(offsets[0]),
-    iconCodePoint: reader.readLong(offsets[1]),
+    iconCodePoint: reader.readLongOrNull(offsets[1]) ?? 0xe547,
     id: reader.readString(offsets[2]),
-    name: reader.readString(offsets[3]),
-    price: reader.readDouble(offsets[4]),
+    minStock: reader.readLongOrNull(offsets[3]) ?? 5,
+    name: reader.readString(offsets[4]),
+    price: reader.readDouble(offsets[5]),
+    stock: reader.readLongOrNull(offsets[6]) ?? 0,
   );
   object.isarId = id;
   return object;
@@ -136,13 +150,17 @@ P _productDeserializeProp<P>(
     case 0:
       return (reader.readString(offset)) as P;
     case 1:
-      return (reader.readLong(offset)) as P;
+      return (reader.readLongOrNull(offset) ?? 0xe547) as P;
     case 2:
       return (reader.readString(offset)) as P;
     case 3:
-      return (reader.readString(offset)) as P;
+      return (reader.readLongOrNull(offset) ?? 5) as P;
     case 4:
+      return (reader.readString(offset)) as P;
+    case 5:
       return (reader.readDouble(offset)) as P;
+    case 6:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -762,6 +780,59 @@ extension ProductQueryFilter
     });
   }
 
+  QueryBuilder<Product, Product, QAfterFilterCondition> minStockEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'minStock',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Product, Product, QAfterFilterCondition> minStockGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'minStock',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Product, Product, QAfterFilterCondition> minStockLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'minStock',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Product, Product, QAfterFilterCondition> minStockBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'minStock',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Product, Product, QAfterFilterCondition> nameEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -953,6 +1024,59 @@ extension ProductQueryFilter
       ));
     });
   }
+
+  QueryBuilder<Product, Product, QAfterFilterCondition> stockEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'stock',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Product, Product, QAfterFilterCondition> stockGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'stock',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Product, Product, QAfterFilterCondition> stockLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'stock',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Product, Product, QAfterFilterCondition> stockBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'stock',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
 }
 
 extension ProductQueryObject
@@ -998,6 +1122,18 @@ extension ProductQuerySortBy on QueryBuilder<Product, Product, QSortBy> {
     });
   }
 
+  QueryBuilder<Product, Product, QAfterSortBy> sortByMinStock() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'minStock', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Product, Product, QAfterSortBy> sortByMinStockDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'minStock', Sort.desc);
+    });
+  }
+
   QueryBuilder<Product, Product, QAfterSortBy> sortByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -1019,6 +1155,18 @@ extension ProductQuerySortBy on QueryBuilder<Product, Product, QSortBy> {
   QueryBuilder<Product, Product, QAfterSortBy> sortByPriceDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'price', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Product, Product, QAfterSortBy> sortByStock() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'stock', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Product, Product, QAfterSortBy> sortByStockDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'stock', Sort.desc);
     });
   }
 }
@@ -1073,6 +1221,18 @@ extension ProductQuerySortThenBy
     });
   }
 
+  QueryBuilder<Product, Product, QAfterSortBy> thenByMinStock() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'minStock', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Product, Product, QAfterSortBy> thenByMinStockDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'minStock', Sort.desc);
+    });
+  }
+
   QueryBuilder<Product, Product, QAfterSortBy> thenByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -1094,6 +1254,18 @@ extension ProductQuerySortThenBy
   QueryBuilder<Product, Product, QAfterSortBy> thenByPriceDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'price', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Product, Product, QAfterSortBy> thenByStock() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'stock', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Product, Product, QAfterSortBy> thenByStockDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'stock', Sort.desc);
     });
   }
 }
@@ -1120,6 +1292,12 @@ extension ProductQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Product, Product, QDistinct> distinctByMinStock() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'minStock');
+    });
+  }
+
   QueryBuilder<Product, Product, QDistinct> distinctByName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1130,6 +1308,12 @@ extension ProductQueryWhereDistinct
   QueryBuilder<Product, Product, QDistinct> distinctByPrice() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'price');
+    });
+  }
+
+  QueryBuilder<Product, Product, QDistinct> distinctByStock() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'stock');
     });
   }
 }
@@ -1160,6 +1344,12 @@ extension ProductQueryProperty
     });
   }
 
+  QueryBuilder<Product, int, QQueryOperations> minStockProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'minStock');
+    });
+  }
+
   QueryBuilder<Product, String, QQueryOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'name');
@@ -1169,6 +1359,12 @@ extension ProductQueryProperty
   QueryBuilder<Product, double, QQueryOperations> priceProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'price');
+    });
+  }
+
+  QueryBuilder<Product, int, QQueryOperations> stockProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'stock');
     });
   }
 }

@@ -15,7 +15,7 @@ extension GetPaymentCollection on Isar {
 
 const PaymentSchema = CollectionSchema(
   name: r'Payment',
-  id: -6533700744042574122,
+  id: 5525914899385344,
   properties: {
     r'amount': PropertySchema(
       id: 0,
@@ -101,7 +101,7 @@ const PaymentSchema = CollectionSchema(
   idName: r'isarId',
   indexes: {
     r'id': IndexSchema(
-      id: -3268401673993471357,
+      id: 1211655477508376,
       name: r'id',
       unique: true,
       replace: false,
@@ -114,7 +114,7 @@ const PaymentSchema = CollectionSchema(
       ],
     ),
     r'memberId': IndexSchema(
-      id: 5707689632932325803,
+      id: 6132504681278500,
       name: r'memberId',
       unique: false,
       replace: false,
@@ -127,7 +127,7 @@ const PaymentSchema = CollectionSchema(
       ],
     ),
     r'date': IndexSchema(
-      id: -7552997827385218417,
+      id: 4042347342473032,
       name: r'date',
       unique: false,
       replace: false,
@@ -140,7 +140,7 @@ const PaymentSchema = CollectionSchema(
       ],
     ),
     r'invoiceNumber': IndexSchema(
-      id: -6231821761165001198,
+      id: 1160123115764574,
       name: r'invoiceNumber',
       unique: false,
       replace: false,
@@ -2817,7 +2817,7 @@ extension PaymentQueryProperty
 
 const PlanComponentSnapshotSchema = Schema(
   name: r'PlanComponentSnapshot',
-  id: -2301824560735585623,
+  id: 4018448478108073,
   properties: {
     r'name': PropertySchema(
       id: 0,

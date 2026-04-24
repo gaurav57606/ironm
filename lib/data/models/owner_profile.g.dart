@@ -15,7 +15,7 @@ extension GetOwnerProfileCollection on Isar {
 
 const OwnerProfileSchema = CollectionSchema(
   name: r'OwnerProfile',
-  id: -8460503014834178897,
+  id: 6264284622352643,
   properties: {
     r'accountNumber': PropertySchema(
       id: 0,
@@ -32,73 +32,43 @@ const OwnerProfileSchema = CollectionSchema(
       name: r'bankName',
       type: IsarType.string,
     ),
-    r'dexterity': PropertySchema(
-      id: 3,
-      name: r'dexterity',
-      type: IsarType.double,
-    ),
-    r'endurance': PropertySchema(
-      id: 4,
-      name: r'endurance',
-      type: IsarType.double,
-    ),
-    r'exp': PropertySchema(
-      id: 5,
-      name: r'exp',
-      type: IsarType.long,
-    ),
     r'gstin': PropertySchema(
-      id: 6,
+      id: 3,
       name: r'gstin',
       type: IsarType.string,
     ),
     r'gymName': PropertySchema(
-      id: 7,
+      id: 4,
       name: r'gymName',
       type: IsarType.string,
     ),
     r'hmacSignature': PropertySchema(
-      id: 8,
+      id: 5,
       name: r'hmacSignature',
       type: IsarType.string,
     ),
     r'ifsc': PropertySchema(
-      id: 9,
+      id: 6,
       name: r'ifsc',
       type: IsarType.string,
     ),
-    r'level': PropertySchema(
-      id: 10,
-      name: r'level',
-      type: IsarType.long,
-    ),
     r'logoPath': PropertySchema(
-      id: 11,
+      id: 7,
       name: r'logoPath',
       type: IsarType.string,
     ),
     r'ownerName': PropertySchema(
-      id: 12,
+      id: 8,
       name: r'ownerName',
       type: IsarType.string,
     ),
     r'phone': PropertySchema(
-      id: 13,
+      id: 9,
       name: r'phone',
       type: IsarType.string,
     ),
-    r'selectedCharacterId': PropertySchema(
-      id: 14,
-      name: r'selectedCharacterId',
-      type: IsarType.string,
-    ),
-    r'strength': PropertySchema(
-      id: 15,
-      name: r'strength',
-      type: IsarType.double,
-    ),
     r'upiId': PropertySchema(
-      id: 16,
+      id: 10,
       name: r'upiId',
       type: IsarType.string,
     )
@@ -158,7 +128,6 @@ int _ownerProfileEstimateSize(
   }
   bytesCount += 3 + object.ownerName.length * 3;
   bytesCount += 3 + object.phone.length * 3;
-  bytesCount += 3 + object.selectedCharacterId.length * 3;
   {
     final value = object.upiId;
     if (value != null) {
@@ -177,20 +146,14 @@ void _ownerProfileSerialize(
   writer.writeString(offsets[0], object.accountNumber);
   writer.writeString(offsets[1], object.address);
   writer.writeString(offsets[2], object.bankName);
-  writer.writeDouble(offsets[3], object.dexterity);
-  writer.writeDouble(offsets[4], object.endurance);
-  writer.writeLong(offsets[5], object.exp);
-  writer.writeString(offsets[6], object.gstin);
-  writer.writeString(offsets[7], object.gymName);
-  writer.writeString(offsets[8], object.hmacSignature);
-  writer.writeString(offsets[9], object.ifsc);
-  writer.writeLong(offsets[10], object.level);
-  writer.writeString(offsets[11], object.logoPath);
-  writer.writeString(offsets[12], object.ownerName);
-  writer.writeString(offsets[13], object.phone);
-  writer.writeString(offsets[14], object.selectedCharacterId);
-  writer.writeDouble(offsets[15], object.strength);
-  writer.writeString(offsets[16], object.upiId);
+  writer.writeString(offsets[3], object.gstin);
+  writer.writeString(offsets[4], object.gymName);
+  writer.writeString(offsets[5], object.hmacSignature);
+  writer.writeString(offsets[6], object.ifsc);
+  writer.writeString(offsets[7], object.logoPath);
+  writer.writeString(offsets[8], object.ownerName);
+  writer.writeString(offsets[9], object.phone);
+  writer.writeString(offsets[10], object.upiId);
 }
 
 OwnerProfile _ownerProfileDeserialize(
@@ -203,20 +166,14 @@ OwnerProfile _ownerProfileDeserialize(
     accountNumber: reader.readStringOrNull(offsets[0]),
     address: reader.readStringOrNull(offsets[1]) ?? '',
     bankName: reader.readStringOrNull(offsets[2]),
-    dexterity: reader.readDoubleOrNull(offsets[3]) ?? 0.5,
-    endurance: reader.readDoubleOrNull(offsets[4]) ?? 0.5,
-    exp: reader.readLongOrNull(offsets[5]) ?? 0,
-    gstin: reader.readStringOrNull(offsets[6]),
-    gymName: reader.readStringOrNull(offsets[7]) ?? '',
-    hmacSignature: reader.readStringOrNull(offsets[8]) ?? '',
-    ifsc: reader.readStringOrNull(offsets[9]),
-    level: reader.readLongOrNull(offsets[10]) ?? 1,
-    logoPath: reader.readStringOrNull(offsets[11]),
-    ownerName: reader.readStringOrNull(offsets[12]) ?? '',
-    phone: reader.readStringOrNull(offsets[13]) ?? '',
-    selectedCharacterId: reader.readStringOrNull(offsets[14]) ?? 'warrior',
-    strength: reader.readDoubleOrNull(offsets[15]) ?? 0.5,
-    upiId: reader.readStringOrNull(offsets[16]),
+    gstin: reader.readStringOrNull(offsets[3]),
+    gymName: reader.readStringOrNull(offsets[4]) ?? '',
+    hmacSignature: reader.readStringOrNull(offsets[5]) ?? '',
+    ifsc: reader.readStringOrNull(offsets[6]),
+    logoPath: reader.readStringOrNull(offsets[7]),
+    ownerName: reader.readStringOrNull(offsets[8]) ?? '',
+    phone: reader.readStringOrNull(offsets[9]) ?? '',
+    upiId: reader.readStringOrNull(offsets[10]),
   );
   object.isarId = id;
   return object;
@@ -236,32 +193,20 @@ P _ownerProfileDeserializeProp<P>(
     case 2:
       return (reader.readStringOrNull(offset)) as P;
     case 3:
-      return (reader.readDoubleOrNull(offset) ?? 0.5) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 4:
-      return (reader.readDoubleOrNull(offset) ?? 0.5) as P;
+      return (reader.readStringOrNull(offset) ?? '') as P;
     case 5:
-      return (reader.readLongOrNull(offset) ?? 0) as P;
+      return (reader.readStringOrNull(offset) ?? '') as P;
     case 6:
       return (reader.readStringOrNull(offset)) as P;
     case 7:
-      return (reader.readStringOrNull(offset) ?? '') as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 8:
       return (reader.readStringOrNull(offset) ?? '') as P;
     case 9:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset) ?? '') as P;
     case 10:
-      return (reader.readLongOrNull(offset) ?? 1) as P;
-    case 11:
-      return (reader.readStringOrNull(offset)) as P;
-    case 12:
-      return (reader.readStringOrNull(offset) ?? '') as P;
-    case 13:
-      return (reader.readStringOrNull(offset) ?? '') as P;
-    case 14:
-      return (reader.readStringOrNull(offset) ?? 'warrior') as P;
-    case 15:
-      return (reader.readDoubleOrNull(offset) ?? 0.5) as P;
-    case 16:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -804,192 +749,6 @@ extension OwnerProfileQueryFilter
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'bankName',
         value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      dexterityEqualTo(
-    double value, {
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'dexterity',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      dexterityGreaterThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'dexterity',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      dexterityLessThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'dexterity',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      dexterityBetween(
-    double lower,
-    double upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'dexterity',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      enduranceEqualTo(
-    double value, {
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'endurance',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      enduranceGreaterThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'endurance',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      enduranceLessThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'endurance',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      enduranceBetween(
-    double lower,
-    double upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'endurance',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition> expEqualTo(
-      int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'exp',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      expGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'exp',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition> expLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'exp',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition> expBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'exp',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
       ));
     });
   }
@@ -1642,60 +1401,6 @@ extension OwnerProfileQueryFilter
     });
   }
 
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition> levelEqualTo(
-      int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'level',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      levelGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'level',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition> levelLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'level',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition> levelBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'level',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
   QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
       logoPathIsNull() {
     return QueryBuilder.apply(this, (query) {
@@ -2121,208 +1826,6 @@ extension OwnerProfileQueryFilter
   }
 
   QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      selectedCharacterIdEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'selectedCharacterId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      selectedCharacterIdGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'selectedCharacterId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      selectedCharacterIdLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'selectedCharacterId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      selectedCharacterIdBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'selectedCharacterId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      selectedCharacterIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'selectedCharacterId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      selectedCharacterIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'selectedCharacterId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      selectedCharacterIdContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'selectedCharacterId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      selectedCharacterIdMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'selectedCharacterId',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      selectedCharacterIdIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'selectedCharacterId',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      selectedCharacterIdIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'selectedCharacterId',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      strengthEqualTo(
-    double value, {
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'strength',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      strengthGreaterThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'strength',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      strengthLessThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'strength',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
-      strengthBetween(
-    double lower,
-    double upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'strength',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterFilterCondition>
       upiIdIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -2520,42 +2023,6 @@ extension OwnerProfileQuerySortBy
     });
   }
 
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> sortByDexterity() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'dexterity', Sort.asc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> sortByDexterityDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'dexterity', Sort.desc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> sortByEndurance() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'endurance', Sort.asc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> sortByEnduranceDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'endurance', Sort.desc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> sortByExp() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'exp', Sort.asc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> sortByExpDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'exp', Sort.desc);
-    });
-  }
-
   QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> sortByGstin() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'gstin', Sort.asc);
@@ -2605,18 +2072,6 @@ extension OwnerProfileQuerySortBy
     });
   }
 
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> sortByLevel() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'level', Sort.asc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> sortByLevelDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'level', Sort.desc);
-    });
-  }
-
   QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> sortByLogoPath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'logoPath', Sort.asc);
@@ -2650,32 +2105,6 @@ extension OwnerProfileQuerySortBy
   QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> sortByPhoneDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'phone', Sort.desc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy>
-      sortBySelectedCharacterId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'selectedCharacterId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy>
-      sortBySelectedCharacterIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'selectedCharacterId', Sort.desc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> sortByStrength() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'strength', Sort.asc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> sortByStrengthDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'strength', Sort.desc);
     });
   }
 
@@ -2728,42 +2157,6 @@ extension OwnerProfileQuerySortThenBy
   QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> thenByBankNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'bankName', Sort.desc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> thenByDexterity() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'dexterity', Sort.asc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> thenByDexterityDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'dexterity', Sort.desc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> thenByEndurance() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'endurance', Sort.asc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> thenByEnduranceDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'endurance', Sort.desc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> thenByExp() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'exp', Sort.asc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> thenByExpDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'exp', Sort.desc);
     });
   }
 
@@ -2828,18 +2221,6 @@ extension OwnerProfileQuerySortThenBy
     });
   }
 
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> thenByLevel() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'level', Sort.asc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> thenByLevelDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'level', Sort.desc);
-    });
-  }
-
   QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> thenByLogoPath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'logoPath', Sort.asc);
@@ -2873,32 +2254,6 @@ extension OwnerProfileQuerySortThenBy
   QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> thenByPhoneDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'phone', Sort.desc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy>
-      thenBySelectedCharacterId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'selectedCharacterId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy>
-      thenBySelectedCharacterIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'selectedCharacterId', Sort.desc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> thenByStrength() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'strength', Sort.asc);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QAfterSortBy> thenByStrengthDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'strength', Sort.desc);
     });
   }
 
@@ -2939,24 +2294,6 @@ extension OwnerProfileQueryWhereDistinct
     });
   }
 
-  QueryBuilder<OwnerProfile, OwnerProfile, QDistinct> distinctByDexterity() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'dexterity');
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QDistinct> distinctByEndurance() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'endurance');
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QDistinct> distinctByExp() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'exp');
-    });
-  }
-
   QueryBuilder<OwnerProfile, OwnerProfile, QDistinct> distinctByGstin(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2986,12 +2323,6 @@ extension OwnerProfileQueryWhereDistinct
     });
   }
 
-  QueryBuilder<OwnerProfile, OwnerProfile, QDistinct> distinctByLevel() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'level');
-    });
-  }
-
   QueryBuilder<OwnerProfile, OwnerProfile, QDistinct> distinctByLogoPath(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -3010,20 +2341,6 @@ extension OwnerProfileQueryWhereDistinct
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'phone', caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QDistinct>
-      distinctBySelectedCharacterId({bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'selectedCharacterId',
-          caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<OwnerProfile, OwnerProfile, QDistinct> distinctByStrength() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'strength');
     });
   }
 
@@ -3062,24 +2379,6 @@ extension OwnerProfileQueryProperty
     });
   }
 
-  QueryBuilder<OwnerProfile, double, QQueryOperations> dexterityProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'dexterity');
-    });
-  }
-
-  QueryBuilder<OwnerProfile, double, QQueryOperations> enduranceProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'endurance');
-    });
-  }
-
-  QueryBuilder<OwnerProfile, int, QQueryOperations> expProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'exp');
-    });
-  }
-
   QueryBuilder<OwnerProfile, String?, QQueryOperations> gstinProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'gstin');
@@ -3104,12 +2403,6 @@ extension OwnerProfileQueryProperty
     });
   }
 
-  QueryBuilder<OwnerProfile, int, QQueryOperations> levelProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'level');
-    });
-  }
-
   QueryBuilder<OwnerProfile, String?, QQueryOperations> logoPathProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'logoPath');
@@ -3125,19 +2418,6 @@ extension OwnerProfileQueryProperty
   QueryBuilder<OwnerProfile, String, QQueryOperations> phoneProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'phone');
-    });
-  }
-
-  QueryBuilder<OwnerProfile, String, QQueryOperations>
-      selectedCharacterIdProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'selectedCharacterId');
-    });
-  }
-
-  QueryBuilder<OwnerProfile, double, QQueryOperations> strengthProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'strength');
     });
   }
 

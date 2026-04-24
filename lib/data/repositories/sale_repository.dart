@@ -4,9 +4,12 @@ import '../../core/providers/database_provider.dart';
 import '../../core/services/hmac_service.dart';
 import '../models/sale.dart';
 import '../models/invoice_sequence.dart';
+import 'web/web_sale_repository.dart';
+import '../../core/providers/web_data_store.dart';
 
 abstract class ISaleRepository {
   Future<List<Sale>> getAll();
+  Stream<List<Sale>> watchAll();
   Future<void> save(Sale sale);
   Future<List<Sale>> getByDateRange(DateTime start, DateTime end);
   Future<InvoiceSequence> getNextInvoiceSequence(String prefix);
@@ -30,6 +33,12 @@ class IsarSaleRepository implements ISaleRepository {
       }
     }
     return verified;
+  }
+
+  @override
+  Stream<List<Sale>> watchAll() {
+    if (_isar == null) return const Stream.empty();
+    return _isar.sales.where().sortByDateDesc().watch(fireImmediately: true);
   }
 
   @override
@@ -81,8 +90,15 @@ class IsarSaleRepository implements ISaleRepository {
   }
 }
 
+
 final saleRepositoryProvider = Provider<ISaleRepository>((ref) {
   final isar = ref.watch(isarProvider);
+  if (isar == null) {
+    final webStore = ref.watch(webDataStoreProvider);
+    if (webStore != null) {
+      return WebSaleRepository(webStore);
+    }
+  }
   final hmac = ref.watch(hmacServiceProvider);
   return IsarSaleRepository(isar, hmac);
 });

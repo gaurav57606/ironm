@@ -43,7 +43,6 @@ final salesProvider = NotifierProvider<SalesNotifier, void>(SalesNotifier.new);
 
 // ── All sales stream ───────────────────────────────────────────────
 final salesStreamProvider = StreamProvider.autoDispose<List<Sale>>((ref) {
-  final isar = ref.watch(isarProvider);
-  if (isar == null) return const Stream.empty();
-  return isar.sales.where().watch(fireImmediately: true);
+  final repo = ref.watch(saleRepositoryProvider);
+  return repo.watchAll();
 });

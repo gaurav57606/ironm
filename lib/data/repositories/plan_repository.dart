@@ -6,6 +6,8 @@ import 'package:isar/isar.dart';
 import '../../core/providers/database_provider.dart';
 import '../../core/services/hmac_service.dart';
 import '../models/plan.dart';
+import 'web/web_plan_repository.dart';
+import '../../core/providers/web_data_store.dart';
 
 abstract class IPlanRepository {
   Future<List<Plan>> getAll();
@@ -57,8 +59,15 @@ class IsarPlanRepository implements IPlanRepository {
   }
 }
 
+
 final planRepositoryProvider = Provider<IPlanRepository>((ref) {
   final isar = ref.watch(isarProvider);
+  if (isar == null) {
+    final webStore = ref.watch(webDataStoreProvider);
+    if (webStore != null) {
+      return WebPlanRepository(webStore);
+    }
+  }
   final hmac = ref.watch(hmacServiceProvider);
   return IsarPlanRepository(isar, hmac);
 });

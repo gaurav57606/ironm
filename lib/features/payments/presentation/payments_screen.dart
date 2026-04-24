@@ -35,7 +35,7 @@ class PaymentsScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          _buildSummaryCard(totalRevenue),
+          _buildSummaryCard(totalRevenue, mtdPayments),
           Expanded(
             child: mtdPayments.isEmpty
                 ? _buildEmptyState()
@@ -61,7 +61,7 @@ class PaymentsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSummaryCard(double total) {
+  Widget _buildSummaryCard(double total, List<Payment> mtdPayments) {
     final formatter = NumberFormat.currency(symbol: '₹', decimalDigits: 2);
     
     return Container(

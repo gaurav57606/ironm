@@ -174,16 +174,8 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
             bankName: _bankNameController.text,
             accountNumber: _accountNumberController.text,
             ifsc: _ifscController.text,
-            // Preserve existing fields
-            isarId: currentOwner?.isarId,
-            level: currentOwner?.level ?? 1,
-            exp: currentOwner?.exp ?? 0,
-            strength: currentOwner?.strength ?? 0.5,
-            endurance: currentOwner?.endurance ?? 0.5,
-            dexterity: currentOwner?.dexterity ?? 0.5,
-            selectedCharacterId: currentOwner?.selectedCharacterId ?? 'warrior',
             hmacSignature: currentOwner?.hmacSignature ?? '',
-          );
+          )..isarId = currentOwner?.isarId;
           
           await ref.read(authProvider.notifier).saveOwner(updatedOwner);
           if (mounted) {

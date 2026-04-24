@@ -2,9 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar/isar.dart';
 import '../../core/providers/database_provider.dart';
 import '../models/product.dart';
+import 'web/web_product_repository.dart';
+import '../../core/providers/web_data_store.dart';
 
 abstract class IProductRepository {
   Future<List<Product>> getAll();
+  Stream<List<Product>> watchAll();
   Future<Product?> getById(String id);
   Future<void> save(Product product);
   Future<void> delete(String id);
@@ -54,6 +57,12 @@ class IsarProductRepository implements IProductRepository {
     });
   }
 
+  @override
+  Stream<List<Product>> watchAll() {
+    if (_isar == null) return const Stream.empty();
+    return _isar.products.where().watch(fireImmediately: true);
+  }
+
   List<Product> _getDefaultProducts() {
     return [
       Product(id: '1', name: 'Whey Protein (1kg)', price: 2499, category: 'Supplements', iconCodePoint: 0xe293),
@@ -66,7 +75,14 @@ class IsarProductRepository implements IProductRepository {
   }
 }
 
+
 final productRepositoryProvider = Provider<IProductRepository>((ref) {
   final isar = ref.watch(isarProvider);
+  if (isar == null) {
+    final webStore = ref.watch(webDataStoreProvider);
+    if (webStore != null) {
+      return WebProductRepository(webStore);
+    }
+  }
   return IsarProductRepository(isar);
 });

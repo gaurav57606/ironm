@@ -247,12 +247,6 @@ class RestoreService {
     ifsc: o['ifsc'],
     upiId: o['upiId'],
     logoPath: o['logoPath'],
-    level: o['level'] ?? 1,
-    exp: o['exp'] ?? 0,
-    strength: (o['strength'] as num?)?.toDouble() ?? 0.5,
-    endurance: (o['endurance'] as num?)?.toDouble() ?? 0.5,
-    dexterity: (o['dexterity'] as num?)?.toDouble() ?? 0.5,
-    selectedCharacterId: o['selectedCharacterId'] ?? 'warrior',
     hmacSignature: o['hmacSignature'] ?? '',
   );
 

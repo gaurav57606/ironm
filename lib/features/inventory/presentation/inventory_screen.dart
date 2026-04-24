@@ -192,9 +192,9 @@ class InventoryScreen extends ConsumerWidget {
                         id: const Uuid().v4(),
                         name: nameController.text.trim(),
                         price: double.tryParse(priceController.text) ?? 0.0,
+                        category: 'General',
                         stock: int.tryParse(stockController.text) ?? 0,
                         minStock: int.tryParse(minStockController.text) ?? 5,
-                        category: 'General',
                       );
                       ref.read(inventoryNotifierProvider.notifier).addProduct(product);
                       Navigator.pop(context);

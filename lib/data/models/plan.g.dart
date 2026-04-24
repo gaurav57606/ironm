@@ -15,7 +15,7 @@ extension GetPlanCollection on Isar {
 
 const PlanSchema = CollectionSchema(
   name: r'Plan',
-  id: 8143067535675439181,
+  id: 559409389583317,
   properties: {
     r'active': PropertySchema(
       id: 0,
@@ -56,7 +56,7 @@ const PlanSchema = CollectionSchema(
   idName: r'isarId',
   indexes: {
     r'id': IndexSchema(
-      id: -3268401673993471357,
+      id: 1211655477508376,
       name: r'id',
       unique: true,
       replace: false,
@@ -69,7 +69,7 @@ const PlanSchema = CollectionSchema(
       ],
     ),
     r'active': IndexSchema(
-      id: -7515327150349743717,
+      id: 5684227358983768,
       name: r'active',
       unique: false,
       replace: false,
@@ -1258,7 +1258,7 @@ extension PlanQueryProperty on QueryBuilder<Plan, Plan, QQueryProperty> {
 
 const PlanComponentSchema = Schema(
   name: r'PlanComponent',
-  id: -7140427696640837452,
+  id: 2281312368768411,
   properties: {
     r'id': PropertySchema(
       id: 0,

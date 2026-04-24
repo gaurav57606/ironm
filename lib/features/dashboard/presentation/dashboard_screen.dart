@@ -11,6 +11,7 @@ import '../../../shared/widgets/status_bar_wrapper.dart';
 import 'widgets/member_health_donut.dart';
 import 'widgets/revenue_mini_bars.dart';
 import 'widgets/alert_banner.dart';
+import '../../../data/models/member.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -225,7 +226,7 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDueTodayList(List members) {
+  Widget _buildDueTodayList(List<Member> members) {
     final now = DateTime.now();
     final dueToday =
         members.where((m) => m.expiryDate != null && m.getDaysRemaining(now) == 0).toList();
@@ -265,7 +266,7 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDueMemberRow(dynamic member) {
+  Widget _buildDueMemberRow(Member member) {
     final now = DateTime.now();
     final days = member.getDaysRemaining(now);
     final color = days <= 0 ? AppColors.expired : AppColors.expiring;

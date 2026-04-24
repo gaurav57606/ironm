@@ -202,7 +202,7 @@ class _QuickAddMemberScreenState extends ConsumerState<QuickAddMemberScreen> {
     final totalPrice = _selectedPlanObj!.totalPrice;
     final subtotal = totalPrice / 1.18;
     final gst = totalPrice - subtotal;
-    final expiryDate = DateTime.now().add(Duration(days: _selectedPlanObj!.durationMonths * 30));
+    final expiryDate = DateTime(DateTime.now().year, DateTime.now().month + _selectedPlanObj!.durationMonths, DateTime.now().day);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
