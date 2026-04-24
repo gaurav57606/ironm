@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ironm/features/members/presentation/members_list_screen.dart';
 import 'package:ironm/features/members/viewmodel/members_viewmodel.dart';
 import 'package:ironm/data/models/member.dart';
@@ -26,8 +27,24 @@ void main() {
             membersProvider.overrideWithValue([member1, member2]),
             clockProvider.overrideWithValue(FakeClock(now)),
           ],
-          child: const MaterialApp(
-            home: MembersListScreen(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const MembersListScreen(),
+                ),
+                GoRoute(
+                  path: '/gym/add-member',
+                  builder: (context, state) => const Scaffold(),
+                ),
+                GoRoute(
+                  path: '/gym/member-details/:id',
+                  builder: (context, state) => const Scaffold(),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -44,8 +61,24 @@ void main() {
             membersProvider.overrideWithValue([]),
             clockProvider.overrideWithValue(FakeClock(now)),
           ],
-          child: const MaterialApp(
-            home: MembersListScreen(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const MembersListScreen(),
+                ),
+                GoRoute(
+                  path: '/gym/add-member',
+                  builder: (context, state) => const Scaffold(),
+                ),
+                GoRoute(
+                  path: '/gym/member-details/:id',
+                  builder: (context, state) => const Scaffold(),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -62,8 +95,24 @@ void main() {
             membersProvider.overrideWithValue([member1, member2]),
             clockProvider.overrideWithValue(FakeClock(now)),
           ],
-          child: const MaterialApp(
-            home: MembersListScreen(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const MembersListScreen(),
+                ),
+                GoRoute(
+                  path: '/gym/add-member',
+                  builder: (context, state) => const Scaffold(),
+                ),
+                GoRoute(
+                  path: '/gym/member-details/:id',
+                  builder: (context, state) => const Scaffold(),
+                ),
+              ],
+            ),
           ),
         ),
       );

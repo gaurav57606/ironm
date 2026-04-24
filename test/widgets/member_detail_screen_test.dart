@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ironm/data/models/member.dart';
 import 'package:ironm/data/models/payment.dart';
 import 'package:ironm/features/members/presentation/member_detail_screen.dart';
@@ -33,8 +34,20 @@ void main() {
             memberPaymentsProvider(member.memberId).overrideWithValue([]),
             memberAttendanceProvider(member.memberId).overrideWith((ref) => Stream.value([])),
           ],
-          child: MaterialApp(
-            home: MemberDetailScreen(memberId: member.memberId),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => MemberDetailScreen(memberId: member.memberId),
+                ),
+                GoRoute(
+                  path: '/gym/member-details/:id/invoice',
+                  builder: (context, state) => const Scaffold(),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -57,8 +70,20 @@ void main() {
             memberPaymentsProvider(member.memberId).overrideWithValue([]),
             memberAttendanceProvider(member.memberId).overrideWith((ref) => Stream.value([])),
           ],
-          child: MaterialApp(
-            home: MemberDetailScreen(memberId: member.memberId),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => MemberDetailScreen(memberId: member.memberId),
+                ),
+                GoRoute(
+                  path: '/gym/member-details/:id/invoice',
+                  builder: (context, state) => const Scaffold(),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -77,8 +102,20 @@ void main() {
             memberPaymentsProvider(member.memberId).overrideWithValue([]),
             memberAttendanceProvider(member.memberId).overrideWith((ref) => Stream.value([])),
           ],
-          child: MaterialApp(
-            home: MemberDetailScreen(memberId: member.memberId),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => MemberDetailScreen(memberId: member.memberId),
+                ),
+                GoRoute(
+                  path: '/gym/member-details/:id/invoice',
+                  builder: (context, state) => const Scaffold(),
+                ),
+              ],
+            ),
           ),
         ),
       );

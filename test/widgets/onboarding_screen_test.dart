@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ironm/features/auth/presentation/onboarding_screen.dart';
 import 'package:ironm/features/auth/viewmodel/auth_viewmodel.dart';
 import 'package:ironm/data/models/app_settings.dart';
@@ -24,8 +25,20 @@ void main() {
           overrides: [
             authProvider.overrideWith(() => FakeAuthViewModel(AuthState(isLoading: false, settings: AppSettings()))),
           ],
-          child: const MaterialApp(
-            home: OnboardingScreen(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const OnboardingScreen(),
+                ),
+                GoRoute(
+                  path: '/signup',
+                  builder: (context, state) => const Scaffold(body: Text('Signup')),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -40,8 +53,20 @@ void main() {
           overrides: [
             authProvider.overrideWith(() => FakeAuthViewModel(AuthState(isLoading: false, settings: AppSettings()))),
           ],
-          child: const MaterialApp(
-            home: OnboardingScreen(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const OnboardingScreen(),
+                ),
+                GoRoute(
+                  path: '/signup',
+                  builder: (context, state) => const Scaffold(body: Text('Signup')),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -62,8 +87,20 @@ void main() {
           overrides: [
             authProvider.overrideWith(() => FakeAuthViewModel(AuthState(isLoading: false, settings: AppSettings()))),
           ],
-          child: const MaterialApp(
-            home: OnboardingScreen(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const OnboardingScreen(),
+                ),
+                GoRoute(
+                  path: '/signup',
+                  builder: (context, state) => const Scaffold(body: Text('Signup')),
+                ),
+              ],
+            ),
           ),
         ),
       );

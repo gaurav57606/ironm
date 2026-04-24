@@ -12,10 +12,6 @@ class FakePaymentRepository implements IsarPaymentRepository {
   final List<Payment> _payments = [];
   final Map<String, InvoiceSequence> _sequences = {};
 
-  @override
-  Isar? get _isar => null;
-  @override
-  dynamic get _hmacService => null;
 
   @override
   Future<List<Payment>> getAll() async => _payments;

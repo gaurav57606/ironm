@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ironm/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:ironm/features/dashboard/viewmodel/dashboard_viewmodel.dart';
 import 'package:ironm/features/members/viewmodel/members_viewmodel.dart';
@@ -33,8 +34,20 @@ void main() {
             membersProvider.overrideWithValue([]),
             authProvider.overrideWith(() => FakeAuthViewModel(AuthState(isLoading: false, settings: AppSettings()))),
           ],
-          child: MaterialApp(
-            home: DashboardScreen(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const DashboardScreen(),
+                ),
+                GoRoute(
+                  path: '/members',
+                  builder: (context, state) => const Scaffold(),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -58,8 +71,20 @@ void main() {
             membersProvider.overrideWithValue([]),
             authProvider.overrideWith(() => FakeAuthViewModel(AuthState(isLoading: false, settings: AppSettings()))),
           ],
-          child: const MaterialApp(
-            home: DashboardScreen(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const DashboardScreen(),
+                ),
+                GoRoute(
+                  path: '/members',
+                  builder: (context, state) => const Scaffold(),
+                ),
+              ],
+            ),
           ),
         ),
       );

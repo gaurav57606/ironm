@@ -36,7 +36,14 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/dashboard',
     redirect: (context, state) {
-      if (authState.isLoading) return null;
+      // While loading, always stay on a neutral splash/loading path.
+      // Do NOT return null here — null keeps initialLocation which can
+      // briefly render the dashboard before redirect fires.
+      if (authState.isLoading) {
+        // Only redirect to '/' (loading scaffold) if not already there
+        if (state.matchedLocation != '/') return '/';
+        return null;
+      }
 
       final isAuth = authState.isAuthenticated;
       final isFirstLaunch = authState.isFirstLaunch;
@@ -48,17 +55,25 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isOnboarding = state.matchedLocation == '/onboarding';
       final isPinSetupPath = state.matchedLocation == '/setup-pin';
       final isPinEntryPath = state.matchedLocation == '/unlock';
+      final isLoadingPath = state.matchedLocation == '/';
 
+      // Step 1: First ever launch → onboarding
       if (isFirstLaunch && !isOnboarding) return '/onboarding';
+
+      // Step 2: Not authenticated (no owner profile) → login
       if (!isAuth && !isLoggingIn && !isOnboarding) return '/login';
 
-      if (isAuth) {
-        if (!isPinSetup && !isPinSetupPath) return '/setup-pin';
-        if (isPinSetup && !unlocked && !isPinEntryPath) return '/unlock';
-        if ((isLoggingIn || isOnboarding || state.matchedLocation == '/') &&
-            unlocked) {
-          return '/dashboard';
-        }
+      // Step 3: Authenticated but no PIN set → setup PIN
+      if (isAuth && !isPinSetup && !isPinSetupPath) return '/setup-pin';
+
+      // Step 4: Authenticated + PIN set but not unlocked → PIN entry
+      // This is the RETURNING USER path — most common case after first launch
+      if (isAuth && isPinSetup && !unlocked && !isPinEntryPath) return '/unlock';
+
+      // Step 5: Already authenticated and unlocked → go to dashboard
+      // (covers cases where user lands on /, /login, /onboarding after unlock)
+      if (isAuth && unlocked && (isLoggingIn || isOnboarding || isLoadingPath)) {
+        return '/dashboard';
       }
 
       return null;

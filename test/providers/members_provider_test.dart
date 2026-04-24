@@ -74,10 +74,8 @@ void main() {
       );
       
       await container.read(membersNotifierProvider.notifier).addMember(member);
-      
-      // We need to wait for the stream to emit if we were using a real stream, 
-      // but here we are overriding with a static list in Stream.value.
-      // For a more realistic test, we'd use a BehaviorSubject in the fake.
+      expect(fakeRepo._members.length, 1);
+      expect(fakeRepo._members.first.name, 'John Doe');
     });
 
     test('filteredMembersProvider filters by status', () async {
@@ -109,16 +107,21 @@ void main() {
       expect(filtered.first.name, 'John Doe');
     });
 
-    test('filteredMembersProvider sorts by name', () async {
-      final m1 = Member(memberId: 'm1', name: 'B', joinDate: DateTime.now(), lastUpdated: DateTime.now());
-      final m2 = Member(memberId: 'm2', name: 'A', joinDate: DateTime.now(), lastUpdated: DateTime.now());
+    test('filteredMembersProvider sorts by expiryDate ASC, nulls last', () async {
+      final now = DateTime.now();
+      final m1 = Member(memberId: 'm1', name: 'B', joinDate: now, lastUpdated: now, expiryDate: now.add(const Duration(days: 5)));
+      final m2 = Member(memberId: 'm2', name: 'A', joinDate: now, lastUpdated: now, expiryDate: now.add(const Duration(days: 20)));
+      final m3 = Member(memberId: 'm3', name: 'C', joinDate: now, lastUpdated: now, expiryDate: null);
       
-      fakeRepo._members.addAll([m1, m2]);
+      fakeRepo._members.addAll([m1, m2, m3]);
       
       await container.read(membersStreamProvider.future);
       final filtered = container.read(filteredMembersProvider);
-      expect(filtered.last.name, 'B');
-      expect(filtered.first.name, 'A');
+      
+      expect(filtered.length, 3);
+      expect(filtered[0].memberId, 'm1'); // 5 days (soonest)
+      expect(filtered[1].memberId, 'm2'); // 20 days
+      expect(filtered[2].memberId, 'm3'); // null (last)
     });
   });
 }

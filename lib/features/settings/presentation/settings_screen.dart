@@ -8,11 +8,25 @@ import '../../../features/auth/viewmodel/auth_viewmodel.dart';
 
 
 
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  late bool _darkMode;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize dark mode from settings if available, else false
+    _darkMode = false; // TODO: Add darkMode to AppSettings model if needed
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(color: AppColors.bg),
       child: Scaffold(
@@ -28,18 +42,58 @@ class SettingsScreen extends ConsumerWidget {
                     _buildSectionHeader('General'),
                     _buildSettingsItem(Icons.person_outline_rounded, 'Account Settings', 'Manage your gym profile', () => context.push('/settings/account')),
                     _buildSettingsItem(Icons.card_membership_rounded, 'Membership Plans', 'Manage plans & pricing', () => context.push('/settings/plans')),
-                    _buildSettingsItem(Icons.notifications_none_rounded, 'Notifications', 'Expiry alerts & reminders', () {}),
-                    _buildSettingsItem(Icons.sync_rounded, 'Data Synchronization', 'Sync with cloud (Last sync: 2h ago)', () {}),
-                    _buildSettingsToggle(Icons.dark_mode_outlined, 'Dark Mode', 'System default enabled', true),
+                    _buildSettingsItem(Icons.notifications_none_rounded, 'Notifications', 'Expiry alerts & reminders', () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Notification settings coming soon'), duration: Duration(seconds: 2)),
+                      );
+                    }),
+                    _buildSettingsItem(Icons.sync_rounded, 'Data Synchronization', 'Offline mode — backup via Backup & Restore', () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('This app works offline. Use Backup & Restore to save your data.'), duration: Duration(seconds: 3)),
+                      );
+                    }),
+                    _buildSettingsToggle(
+                      Icons.dark_mode_outlined,
+                      'Dark Mode',
+                      _darkMode ? 'Dark mode enabled' : 'Light mode enabled',
+                      _darkMode,
+                      (v) => setState(() => _darkMode = v),
+                    ),
                     
                     _buildSectionHeader('System'),
                     _buildSettingsItem(Icons.cloud_upload_outlined, 'Backup & Restore', 'Keep your data safe', () => context.push('/settings/backup')),
-                    _buildSettingsItem(Icons.security_rounded, 'Security & PIN', 'Biometric & PIN lock', () {}),
-                    _buildSettingsItem(Icons.language_rounded, 'Language', 'English (IN)', () {}),
+                    _buildSettingsItem(Icons.security_rounded, 'Security & PIN', 'Biometric & PIN lock', () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Change your PIN from the login screen'), duration: Duration(seconds: 2)),
+                      );
+                    }),
+                    _buildSettingsItem(Icons.language_rounded, 'Language', 'English (IN)', () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Only English (IN) is supported'), duration: Duration(seconds: 2)),
+                      );
+                    }),
                     
                     _buildSectionHeader('About'),
                     _buildSettingsItem(Icons.info_outline_rounded, 'App Version', 'v1.4.2 (Production)', null),
-                    _buildSettingsItem(Icons.help_outline_rounded, 'Help & Support', 'Contact IronBook team', () {}),
+                    _buildSettingsItem(Icons.help_outline_rounded, 'Help & Support', 'Contact IronBook team', () {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: AppColors.bg3,
+                          title: Text('Help & Support', style: AppTextStyles.h3),
+                          content: Text(
+                            'For support, contact:\nsupport@ironm.app\n\nVersion: v1.4.2',
+                            style: AppTextStyles.body.copyWith(fontSize: 11),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => ctx.pop(),
+                              child: const Text('Close', style: TextStyle(color: AppColors.orange)),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
                     
                     const SizedBox(height: 20),
                     _buildLogoutButton(ref),
@@ -140,7 +194,7 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSettingsToggle(IconData icon, String title, String subtitle, bool value) {
+  Widget _buildSettingsToggle(IconData icon, String title, String subtitle, bool value, ValueChanged<bool> onChanged) {
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
@@ -164,7 +218,7 @@ class SettingsScreen extends ConsumerWidget {
         subtitle: Text(subtitle, style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.textMuted)),
         trailing: Switch(
           value: value,
-          onChanged: (v) {},
+          onChanged: onChanged,
           activeColor: AppColors.orange,
           activeTrackColor: AppColors.orange.withValues(alpha: 0.2),
           inactiveThumbColor: AppColors.textMuted,

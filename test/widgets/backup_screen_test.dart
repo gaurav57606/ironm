@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ironm/features/settings/presentation/screens/backup_screen.dart';
 import 'package:ironm/core/providers/backup_provider.dart';
 import 'package:ironm/core/services/backup_service.dart';
@@ -25,8 +26,20 @@ void main() {
           overrides: [
             backupViewModelProvider.overrideWith(DataBackupViewModel.new),
           ],
-          child: const MaterialApp(
-            home: BackupRestoreScreen(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const BackupRestoreScreen(),
+                ),
+                GoRoute(
+                  path: '/dashboard',
+                  builder: (context, state) => const Scaffold(body: Text('Dashboard')),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -41,8 +54,20 @@ void main() {
           overrides: [
             backupViewModelProvider.overrideWith(LoadingBackupViewModel.new),
           ],
-          child: const MaterialApp(
-            home: BackupRestoreScreen(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const BackupRestoreScreen(),
+                ),
+                GoRoute(
+                  path: '/dashboard',
+                  builder: (context, state) => const Scaffold(body: Text('Dashboard')),
+                ),
+              ],
+            ),
           ),
         ),
       );

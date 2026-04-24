@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ironm/data/models/member.dart';
 import 'package:ironm/data/models/payment.dart';
 import 'package:ironm/data/models/owner_profile.dart';
@@ -60,8 +61,16 @@ void main() {
             membersProvider.overrideWithValue([member]),
             paymentsStreamProvider.overrideWith((ref) => Stream.value([payment])),
           ],
-          child: MaterialApp(
-            home: InvoiceScreen(memberId: member.memberId),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => InvoiceScreen(memberId: member.memberId),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -83,8 +92,16 @@ void main() {
             membersProvider.overrideWithValue([member]),
             paymentsStreamProvider.overrideWith((ref) => Stream.value([payment])),
           ],
-          child: MaterialApp(
-            home: InvoiceScreen(memberId: member.memberId),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => InvoiceScreen(memberId: member.memberId),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -106,8 +123,16 @@ void main() {
             membersProvider.overrideWithValue([member]),
             paymentsStreamProvider.overrideWith((ref) => Stream.value([payment])),
           ],
-          child: MaterialApp(
-            home: InvoiceScreen(memberId: member.memberId),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => InvoiceScreen(memberId: member.memberId),
+                ),
+              ],
+            ),
           ),
         ),
       );

@@ -58,10 +58,6 @@ class FakeSecureStorage extends Mock implements FlutterSecureStorage {
 }
 
 class FakePinService implements PinService {
-  @override
-  dynamic get _storage => null;
-  @override
-  dynamic get _localAuth => null;
 
   String? _savedPin;
   bool _unlocked = false;
@@ -84,15 +80,9 @@ class FakePinService implements PinService {
   }
   @override
   Future<AuthResult> authenticateWithBiometric() async => AuthResult.failure;
-  @override
-  String _hashWithSalt(String input, String salt, {int iterations = 100000}) => '';
 }
 
 class FakeSettingsRepository implements IsarSettingsRepository {
-  @override
-  dynamic get _isar => null;
-  @override
-  dynamic get _hmacService => null;
 
   OwnerProfile? _owner;
   AppSettings _settings = AppSettings();

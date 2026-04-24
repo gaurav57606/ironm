@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ironm/features/attendance/presentation/attendance_screen.dart';
 import 'package:ironm/features/attendance/viewmodel/attendance_viewmodel.dart';
 import 'package:ironm/features/members/viewmodel/members_viewmodel.dart';
@@ -20,8 +21,16 @@ void main() {
             attendanceProvider.overrideWith((ref) => [attendance]),
             membersProvider.overrideWithValue([member]),
           ],
-          child: MaterialApp(
-            home: AttendanceScreen(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const AttendanceScreen(),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -37,8 +46,16 @@ void main() {
             attendanceProvider.overrideWith((ref) => []),
             membersProvider.overrideWithValue([member]),
           ],
-          child: MaterialApp(
-            home: AttendanceScreen(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const AttendanceScreen(),
+                ),
+              ],
+            ),
           ),
         ),
       );

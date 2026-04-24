@@ -31,6 +31,9 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
 
   void _onKeyPress(String key) {
     if (widget.isLockout || _isLoading) return;
+
+    bool shouldVerify = false;
+
     setState(() {
       _error = false;
       if (key == '⌫') {
@@ -38,10 +41,14 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
       } else if (_pin.length < 4) {
         _pin += key;
         if (_pin.length == 4) {
-          _handleVerify();
+          shouldVerify = true;
         }
       }
     });
+
+    if (shouldVerify) {
+      _handleVerify();
+    }
   }
 
   Future<void> _handleVerify() async {

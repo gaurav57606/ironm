@@ -25,6 +25,7 @@ class _QuickAddMemberScreenState extends ConsumerState<QuickAddMemberScreen> {
   final _phoneController = TextEditingController();
   Plan? _selectedPlanObj;
   String _paymentMethod = 'UPI';
+  DateTime _joinDate = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +43,7 @@ class _QuickAddMemberScreenState extends ConsumerState<QuickAddMemberScreen> {
                   children: [
                     _buildFormField('Full Name', _nameController, 'Ravi Kumar', isFocused: true),
                     _buildFormField('Phone Number', _phoneController, '+91 99887 76655'),
-                    _buildDateReadOnlyField('Join Date', DateFormat('dd MMM yyyy').format(DateTime.now())),
+                    _buildDatePickerField(),
                     _buildPlanSelection(),
                     _buildPlanSummary(),
                     _buildPaymentMethodSelection(),
@@ -120,23 +121,67 @@ class _QuickAddMemberScreenState extends ConsumerState<QuickAddMemberScreen> {
     );
   }
 
-  Widget _buildDateReadOnlyField(String label, String value) {
+  Widget _buildDatePickerField() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label.toUpperCase(), style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.textSecondary, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
-          const SizedBox(height: 4),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-            decoration: BoxDecoration(
-              color: AppColors.bg3,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.border),
+          Text(
+            'JOIN DATE',
+            style: AppTextStyles.label.copyWith(
+              fontSize: 9,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
             ),
-            child: Text(value, style: AppTextStyles.body.copyWith(fontSize: 11, color: AppColors.textSecondary)),
+          ),
+          const SizedBox(height: 4),
+          GestureDetector(
+            onTap: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: _joinDate,
+                firstDate: DateTime(2000),
+                lastDate: DateTime.now(),
+                builder: (context, child) {
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      colorScheme: const ColorScheme.dark(
+                        primary: AppColors.orange,
+                        onPrimary: Colors.white,
+                        surface: AppColors.bg3,
+                        onSurface: AppColors.textPrimary,
+                      ),
+                      dialogBackgroundColor: AppColors.bg,
+                    ),
+                    child: child!,
+                  );
+                },
+              );
+              if (picked != null) {
+                setState(() => _joinDate = picked);
+              }
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              decoration: BoxDecoration(
+                color: AppColors.bg3,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    DateFormat('dd MMM yyyy').format(_joinDate),
+                    style: AppTextStyles.body.copyWith(fontSize: 11),
+                  ),
+                  const Icon(Icons.calendar_today_rounded, size: 13, color: AppColors.textSecondary),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -202,7 +247,15 @@ class _QuickAddMemberScreenState extends ConsumerState<QuickAddMemberScreen> {
     final totalPrice = _selectedPlanObj!.totalPrice;
     final subtotal = totalPrice / 1.18;
     final gst = totalPrice - subtotal;
-    final expiryDate = DateTime(DateTime.now().year, DateTime.now().month + _selectedPlanObj!.durationMonths, DateTime.now().day);
+    
+    // Correct expiry calculation logic
+    final targetMonth = _joinDate.month + _selectedPlanObj!.durationMonths;
+    final yearOffset = (targetMonth - 1) ~/ 12;
+    final month = (targetMonth - 1) % 12 + 1;
+    final year = _joinDate.year + yearOffset;
+    final lastDay = DateTime(year, month + 1, 0).day;
+    final day = _joinDate.day > lastDay ? lastDay : _joinDate.day;
+    final expiryDate = DateTime(year, month, day);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -298,14 +351,14 @@ class _QuickAddMemberScreenState extends ConsumerState<QuickAddMemberScreen> {
             final plan = _selectedPlanObj!;
             final memberId = const Uuid().v4();
             
-            // 1. Create member (no expiry — payment step will set it)
+            // 1. Create member with selected join date
             final member = Member(
               memberId: memberId,
               name: _nameController.text.trim(),
               phone: _phoneController.text.trim(),
               planId: plan.id,
               planName: plan.name,
-              joinDate: DateTime.now(),
+              joinDate: _joinDate,
               lastUpdated: DateTime.now(),
             );
             

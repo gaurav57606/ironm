@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ironm/features/auth/presentation/pin_entry_screen.dart';
 import 'package:ironm/features/auth/viewmodel/auth_viewmodel.dart';
 import 'package:ironm/data/models/app_settings.dart';
@@ -23,8 +24,24 @@ void main() {
           overrides: [
             authProvider.overrideWith(() => FakeAuthViewModel(AuthState(isLoading: false, settings: AppSettings()))),
           ],
-          child: const MaterialApp(
-            home: PinEntryScreen(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const PinEntryScreen(),
+                ),
+                GoRoute(
+                  path: '/dashboard',
+                  builder: (context, state) => const Scaffold(body: Text('Dashboard')),
+                ),
+                GoRoute(
+                  path: '/forgot-password',
+                  builder: (context, state) => const Scaffold(body: Text('Forgot Password')),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -45,8 +62,24 @@ void main() {
           overrides: [
             authProvider.overrideWith(() => FakeAuthViewModel(AuthState(isLoading: false, settings: AppSettings()))),
           ],
-          child: const MaterialApp(
-            home: PinEntryScreen(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const PinEntryScreen(),
+                ),
+                GoRoute(
+                  path: '/dashboard',
+                  builder: (context, state) => const Scaffold(body: Text('Dashboard')),
+                ),
+                GoRoute(
+                  path: '/forgot-password',
+                  builder: (context, state) => const Scaffold(body: Text('Forgot Password')),
+                ),
+              ],
+            ),
           ),
         ),
       );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ironm/features/members/presentation/quick_add_member_screen.dart';
 import 'package:ironm/features/plans/viewmodel/plans_viewmodel.dart';
 import 'package:ironm/data/models/plan.dart';
@@ -13,8 +14,16 @@ void main() {
           overrides: [
             plansStreamProvider.overrideWith((ref) => Stream.value([])),
           ],
-          child: const MaterialApp(
-            home: QuickAddMemberScreen(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const QuickAddMemberScreen(),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -31,8 +40,16 @@ void main() {
           overrides: [
             plansStreamProvider.overrideWith((ref) => Stream.value([])),
           ],
-          child: const MaterialApp(
-            home: QuickAddMemberScreen(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const QuickAddMemberScreen(),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -50,8 +67,16 @@ void main() {
           overrides: [
             plansStreamProvider.overrideWith((ref) => Stream.value([plan])),
           ],
-          child: const MaterialApp(
-            home: QuickAddMemberScreen(),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const QuickAddMemberScreen(),
+                ),
+              ],
+            ),
           ),
         ),
       );

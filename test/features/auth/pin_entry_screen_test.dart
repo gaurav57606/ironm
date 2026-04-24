@@ -5,12 +5,18 @@ import 'package:ironm/features/auth/presentation/pin_entry_screen.dart';
 import 'package:ironm/features/auth/viewmodel/auth_viewmodel.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockAuthNotifier extends StateNotifier<AuthState> with Mock implements AuthNotifier {
-  MockAuthNotifier(super.state);
-}
+
 
 void main() {
   testWidgets('PinEntryScreen shows dots as user types', (tester) async {
+    // Set a larger surface size to ensure keyboard is visible
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(home: PinEntryScreen()),
