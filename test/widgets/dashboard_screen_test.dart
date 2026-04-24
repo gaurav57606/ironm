@@ -47,6 +47,10 @@ void main() {
     });
 
     testWidgets('Monthly revenue shows formatted correctly', (tester) async {
+      tester.view.physicalSize = const Size(600, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -54,12 +58,16 @@ void main() {
             membersProvider.overrideWithValue([]),
             authProvider.overrideWith(() => FakeAuthViewModel(AuthState(isLoading: false, settings: AppSettings()))),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             home: DashboardScreen(),
           ),
         ),
       );
 
+      await tester.pumpAndSettle();
+
+      // Ensure the revenue card is visible
+      await tester.scrollUntilVisible(find.textContaining('15000'), 100);
       await tester.pumpAndSettle();
 
       // Should show the revenue value

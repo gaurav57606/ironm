@@ -6,6 +6,13 @@ import 'package:ironm/features/members/viewmodel/members_viewmodel.dart';
 import 'package:ironm/data/models/member.dart';
 import 'package:ironm/core/utils/clock.dart';
 
+class FakeClock implements IClock {
+  final DateTime _now;
+  FakeClock(this._now);
+  @override
+  DateTime get now => _now;
+}
+
 void main() {
   group('MembersListScreen Widget Tests', () {
     final now = DateTime(2026, 4, 24);
@@ -17,7 +24,7 @@ void main() {
         ProviderScope(
           overrides: [
             membersProvider.overrideWithValue([member1, member2]),
-            clockProvider.overrideWithValue(Clock.fixed(now)),
+            clockProvider.overrideWithValue(FakeClock(now)),
           ],
           child: const MaterialApp(
             home: MembersListScreen(),
@@ -35,7 +42,7 @@ void main() {
         ProviderScope(
           overrides: [
             membersProvider.overrideWithValue([]),
-            clockProvider.overrideWithValue(Clock.fixed(now)),
+            clockProvider.overrideWithValue(FakeClock(now)),
           ],
           child: const MaterialApp(
             home: MembersListScreen(),
@@ -53,7 +60,7 @@ void main() {
         ProviderScope(
           overrides: [
             membersProvider.overrideWithValue([member1, member2]),
-            clockProvider.overrideWithValue(Clock.fixed(now)),
+            clockProvider.overrideWithValue(FakeClock(now)),
           ],
           child: const MaterialApp(
             home: MembersListScreen(),
