@@ -100,7 +100,7 @@ class SyncWorker {
       final paymentBatch = _firestore!.batch();
       for (final p in payments) {
         paymentBatch.set(
-          _firestore!.collection('$basePath/payments').doc(p.paymentId),
+          _firestore!.collection('$basePath/payments').doc(p.id),
           p.toJson(),
         );
       }
@@ -111,7 +111,7 @@ class SyncWorker {
       final planBatch = _firestore!.batch();
       for (final pl in plans) {
         planBatch.set(
-          _firestore!.collection('$basePath/plans').doc(pl.planId),
+          _firestore!.collection('$basePath/plans').doc(pl.id),
           pl.toJson(),
         );
       }

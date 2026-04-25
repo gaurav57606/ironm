@@ -116,6 +116,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SignupScreen(),
       ),
       GoRoute(
+        path: '/gym/notifications',
+        builder: (context, state) => const NotificationInboxScreen(),
+      ),
+      GoRoute(
         path: '/setup-pin',
         builder: (context, state) => const PinSetupScreen(),
       ),
@@ -209,15 +213,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: '/analytics',
                 builder: (context, state) => const AnalyticsScreen(),
               ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/notifications',
-                builder: (context, state) => const NotificationInboxScreen(),
-              ),
-
             ],
           ),
           StatefulShellBranch(

@@ -311,6 +311,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                       trailing: const Icon(Icons.login_rounded, color: AppColors.orange),
                       onTap: () async {
                         final attendance = Attendance(
+                          attendanceId: const Uuid().v4(),
                           memberId: m.memberId,
                           checkInTime: DateTime.now(),
                         );

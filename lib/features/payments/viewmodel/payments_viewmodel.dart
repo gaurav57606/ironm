@@ -16,6 +16,11 @@ final paymentsStreamProvider = StreamProvider.autoDispose<List<Payment>>((ref) {
   return repo.watchAll();
 });
 
+final allPaymentsProvider = Provider<List<Payment>>((ref) {
+  final payments = ref.watch(paymentsStreamProvider).value ?? [];
+  return payments;
+});
+
 // ── Payments for a single member ───────────────────────────────────
 final memberPaymentsProvider =
     Provider.autoDispose.family<List<Payment>, String>((ref, memberId) {

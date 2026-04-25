@@ -6,7 +6,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../shared/widgets/status_bar_wrapper.dart';
 import '../../../features/auth/viewmodel/auth_viewmodel.dart';
 import '../../members/viewmodel/members_viewmodel.dart';
-import '../../billing/viewmodel/payments_viewmodel.dart';
+import '../../payments/viewmodel/payments_viewmodel.dart';
 import '../../../core/services/csv_export_service.dart';
 
 
@@ -20,7 +20,8 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late bool _darkMode;
-  bool _isExporting = false;
+  bool _exportingMembers = false;
+  bool _exportingPayments = false;
   final _csvService = const CsvExportService();
 
   @override
@@ -69,17 +70,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     _buildSettingsItem(Icons.cloud_upload_outlined, 'Backup & Restore', 'Keep your data safe', () => context.push('/settings/backup')),
                     
                     _buildSectionHeader('Export Data'),
-                    _buildSettingsItem(
-                      _isExporting ? Icons.hourglass_empty_rounded : Icons.file_download_outlined,
+                    _buildExportTile(
+                      Icons.file_download_outlined,
                       'Export Members',
                       'Download member list as CSV',
-                      _isExporting ? null : _exportMembers,
+                      _exportingMembers,
+                      _exportMembers,
                     ),
-                    _buildSettingsItem(
-                      _isExporting ? Icons.hourglass_empty_rounded : Icons.receipt_long_outlined,
+                    _buildExportTile(
+                      Icons.receipt_long_outlined,
                       'Export Payments',
                       'Download payment records as CSV',
-                      _isExporting ? null : _exportPayments,
+                      _exportingPayments,
+                      _exportPayments,
                     ),
                     _buildSettingsItem(Icons.security_rounded, 'Security & PIN', 'Biometric & PIN lock', () {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -272,7 +275,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
   Future<void> _exportMembers() async {
-    setState(() => _isExporting = true);
+    setState(() => _exportingMembers = true);
     try {
       final members = ref.read(membersProvider);
       await _csvService.exportAndShareMembers(members);
@@ -283,12 +286,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         );
       }
     } finally {
-      if (mounted) setState(() => _isExporting = false);
+      if (mounted) setState(() => _exportingMembers = false);
     }
   }
 
   Future<void> _exportPayments() async {
-    setState(() => _isExporting = true);
+    setState(() => _exportingPayments = true);
     try {
       final payments = ref.read(allPaymentsProvider);
       await _csvService.exportAndSharePayments(payments);
@@ -299,8 +302,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         );
       }
     } finally {
-      if (mounted) setState(() => _isExporting = false);
+      if (mounted) setState(() => _exportingPayments = false);
     }
+  }
+
+  Widget _buildExportTile(IconData icon, String title, String subtitle, bool isLoading, VoidCallback onTap) {
+    return _buildSettingsItem(
+      isLoading ? Icons.hourglass_empty_rounded : icon,
+      title,
+      subtitle,
+      isLoading ? null : onTap,
+    );
   }
 }
 

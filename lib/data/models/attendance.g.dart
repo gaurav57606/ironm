@@ -17,13 +17,18 @@ const AttendanceSchema = CollectionSchema(
   name: r'Attendance',
   id: 4618409064190326501,
   properties: {
-    r'checkInTime': PropertySchema(
+    r'attendanceId': PropertySchema(
       id: 0,
+      name: r'attendanceId',
+      type: IsarType.string,
+    ),
+    r'checkInTime': PropertySchema(
+      id: 1,
       name: r'checkInTime',
       type: IsarType.dateTime,
     ),
     r'memberId': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'memberId',
       type: IsarType.string,
     )
@@ -34,6 +39,19 @@ const AttendanceSchema = CollectionSchema(
   deserializeProp: _attendanceDeserializeProp,
   idName: r'isarId',
   indexes: {
+    r'attendanceId': IndexSchema(
+      id: -5047753669473436316,
+      name: r'attendanceId',
+      unique: true,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'attendanceId',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
     r'memberId': IndexSchema(
       id: 5707689632932325803,
       name: r'memberId',
@@ -75,6 +93,7 @@ int _attendanceEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  bytesCount += 3 + object.attendanceId.length * 3;
   bytesCount += 3 + object.memberId.length * 3;
   return bytesCount;
 }
@@ -85,8 +104,9 @@ void _attendanceSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeDateTime(offsets[0], object.checkInTime);
-  writer.writeString(offsets[1], object.memberId);
+  writer.writeString(offsets[0], object.attendanceId);
+  writer.writeDateTime(offsets[1], object.checkInTime);
+  writer.writeString(offsets[2], object.memberId);
 }
 
 Attendance _attendanceDeserialize(
@@ -96,10 +116,11 @@ Attendance _attendanceDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Attendance(
-    checkInTime: reader.readDateTime(offsets[0]),
-    memberId: reader.readString(offsets[1]),
+    attendanceId: reader.readString(offsets[0]),
+    checkInTime: reader.readDateTime(offsets[1]),
+    isarId: id,
+    memberId: reader.readString(offsets[2]),
   );
-  object.isarId = id;
   return object;
 }
 
@@ -111,8 +132,10 @@ P _attendanceDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 1:
+      return (reader.readDateTime(offset)) as P;
+    case 2:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -129,6 +152,62 @@ List<IsarLinkBase<dynamic>> _attendanceGetLinks(Attendance object) {
 
 void _attendanceAttach(IsarCollection<dynamic> col, Id id, Attendance object) {
   object.isarId = id;
+}
+
+extension AttendanceByIndex on IsarCollection<Attendance> {
+  Future<Attendance?> getByAttendanceId(String attendanceId) {
+    return getByIndex(r'attendanceId', [attendanceId]);
+  }
+
+  Attendance? getByAttendanceIdSync(String attendanceId) {
+    return getByIndexSync(r'attendanceId', [attendanceId]);
+  }
+
+  Future<bool> deleteByAttendanceId(String attendanceId) {
+    return deleteByIndex(r'attendanceId', [attendanceId]);
+  }
+
+  bool deleteByAttendanceIdSync(String attendanceId) {
+    return deleteByIndexSync(r'attendanceId', [attendanceId]);
+  }
+
+  Future<List<Attendance?>> getAllByAttendanceId(
+      List<String> attendanceIdValues) {
+    final values = attendanceIdValues.map((e) => [e]).toList();
+    return getAllByIndex(r'attendanceId', values);
+  }
+
+  List<Attendance?> getAllByAttendanceIdSync(List<String> attendanceIdValues) {
+    final values = attendanceIdValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'attendanceId', values);
+  }
+
+  Future<int> deleteAllByAttendanceId(List<String> attendanceIdValues) {
+    final values = attendanceIdValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'attendanceId', values);
+  }
+
+  int deleteAllByAttendanceIdSync(List<String> attendanceIdValues) {
+    final values = attendanceIdValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'attendanceId', values);
+  }
+
+  Future<Id> putByAttendanceId(Attendance object) {
+    return putByIndex(r'attendanceId', object);
+  }
+
+  Id putByAttendanceIdSync(Attendance object, {bool saveLinks = true}) {
+    return putByIndexSync(r'attendanceId', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllByAttendanceId(List<Attendance> objects) {
+    return putAllByIndex(r'attendanceId', objects);
+  }
+
+  List<Id> putAllByAttendanceIdSync(List<Attendance> objects,
+      {bool saveLinks = true}) {
+    return putAllByIndexSync(r'attendanceId', objects, saveLinks: saveLinks);
+  }
 }
 
 extension AttendanceQueryWhereSort
@@ -216,6 +295,51 @@ extension AttendanceQueryWhere
         upper: upperIsarId,
         includeUpper: includeUpper,
       ));
+    });
+  }
+
+  QueryBuilder<Attendance, Attendance, QAfterWhereClause> attendanceIdEqualTo(
+      String attendanceId) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'attendanceId',
+        value: [attendanceId],
+      ));
+    });
+  }
+
+  QueryBuilder<Attendance, Attendance, QAfterWhereClause>
+      attendanceIdNotEqualTo(String attendanceId) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'attendanceId',
+              lower: [],
+              upper: [attendanceId],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'attendanceId',
+              lower: [attendanceId],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'attendanceId',
+              lower: [attendanceId],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'attendanceId',
+              lower: [],
+              upper: [attendanceId],
+              includeUpper: false,
+            ));
+      }
     });
   }
 
@@ -358,6 +482,142 @@ extension AttendanceQueryWhere
 
 extension AttendanceQueryFilter
     on QueryBuilder<Attendance, Attendance, QFilterCondition> {
+  QueryBuilder<Attendance, Attendance, QAfterFilterCondition>
+      attendanceIdEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'attendanceId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Attendance, Attendance, QAfterFilterCondition>
+      attendanceIdGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'attendanceId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Attendance, Attendance, QAfterFilterCondition>
+      attendanceIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'attendanceId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Attendance, Attendance, QAfterFilterCondition>
+      attendanceIdBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'attendanceId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Attendance, Attendance, QAfterFilterCondition>
+      attendanceIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'attendanceId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Attendance, Attendance, QAfterFilterCondition>
+      attendanceIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'attendanceId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Attendance, Attendance, QAfterFilterCondition>
+      attendanceIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'attendanceId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Attendance, Attendance, QAfterFilterCondition>
+      attendanceIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'attendanceId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Attendance, Attendance, QAfterFilterCondition>
+      attendanceIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'attendanceId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Attendance, Attendance, QAfterFilterCondition>
+      attendanceIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'attendanceId',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<Attendance, Attendance, QAfterFilterCondition>
       checkInTimeEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
@@ -627,6 +887,18 @@ extension AttendanceQueryLinks
 
 extension AttendanceQuerySortBy
     on QueryBuilder<Attendance, Attendance, QSortBy> {
+  QueryBuilder<Attendance, Attendance, QAfterSortBy> sortByAttendanceId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'attendanceId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Attendance, Attendance, QAfterSortBy> sortByAttendanceIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'attendanceId', Sort.desc);
+    });
+  }
+
   QueryBuilder<Attendance, Attendance, QAfterSortBy> sortByCheckInTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'checkInTime', Sort.asc);
@@ -654,6 +926,18 @@ extension AttendanceQuerySortBy
 
 extension AttendanceQuerySortThenBy
     on QueryBuilder<Attendance, Attendance, QSortThenBy> {
+  QueryBuilder<Attendance, Attendance, QAfterSortBy> thenByAttendanceId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'attendanceId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Attendance, Attendance, QAfterSortBy> thenByAttendanceIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'attendanceId', Sort.desc);
+    });
+  }
+
   QueryBuilder<Attendance, Attendance, QAfterSortBy> thenByCheckInTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'checkInTime', Sort.asc);
@@ -693,6 +977,13 @@ extension AttendanceQuerySortThenBy
 
 extension AttendanceQueryWhereDistinct
     on QueryBuilder<Attendance, Attendance, QDistinct> {
+  QueryBuilder<Attendance, Attendance, QDistinct> distinctByAttendanceId(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'attendanceId', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Attendance, Attendance, QDistinct> distinctByCheckInTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'checkInTime');
@@ -712,6 +1003,12 @@ extension AttendanceQueryProperty
   QueryBuilder<Attendance, int, QQueryOperations> isarIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isarId');
+    });
+  }
+
+  QueryBuilder<Attendance, String, QQueryOperations> attendanceIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'attendanceId');
     });
   }
 

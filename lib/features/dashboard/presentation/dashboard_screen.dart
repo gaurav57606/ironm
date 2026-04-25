@@ -88,7 +88,7 @@ class DashboardScreen extends ConsumerWidget {
     final unreadCount = ref.watch(unreadNotificationCountProvider);
 
     return GestureDetector(
-      onTap: () => context.push('/notifications'),
+      onTap: () => context.push('/gym/notifications'),
       child: Stack(
         clipBehavior: Clip.none,
         children: [

@@ -27,7 +27,7 @@ class AppBottomNavBar extends StatelessWidget {
           _buildNavItem(1, Icons.people_rounded, 'Members'),
           _buildFab(context),
           _buildNavItem(2, Icons.description_rounded, 'POS'),
-          _buildNavItem(6, Icons.settings_rounded, 'Settings'),
+          _buildNavItem(5, Icons.settings_rounded, 'Settings'),
 
         ],
       ),

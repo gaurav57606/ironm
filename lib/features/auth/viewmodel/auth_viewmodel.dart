@@ -20,6 +20,7 @@ import '../../../core/sync/sync_worker.dart';
 import '../../../core/sync/sync_coordinator.dart';
 import '../../../core/security/entitlement_provider.dart';
 import '../../../core/security/entitlement_guard.dart';
+import '../../../core/services/fcm_service.dart';
 
 part 'auth_viewmodel.g.dart';
 
@@ -120,6 +121,11 @@ class AuthViewModel extends _$AuthViewModel {
       unawaited(_syncCoordinator?.clearAllLocks());
       // Flush any queued jobs from last offline session
       unawaited(_syncWorker?.flush());
+      unawaited(ref.read(fcmServiceProvider).initialize());
+      final uid = _firebaseAuth?.currentUser?.uid;
+      if (uid != null) {
+        unawaited(ref.read(fcmServiceProvider).subscribeToOwnerTopic(uid));
+      }
     }
   }
 

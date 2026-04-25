@@ -33,7 +33,6 @@ class InvoicePdfService {
 
     // ── Colours matching IronM brand ─────────────────────────
     const orange    = PdfColor.fromInt(0xFFFF6B2B);
-    const bgDark    = PdfColor.fromInt(0xFF0C0C0E);
     const bgCard    = PdfColor.fromInt(0xFF141417);
     const borderCol = PdfColor.fromInt(0xFF2A2A30);
     const textPrim  = PdfColor.fromInt(0xFFF0EEF6);
