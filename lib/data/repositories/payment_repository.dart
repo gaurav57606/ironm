@@ -4,6 +4,10 @@ import '../../core/providers/database_provider.dart';
 import '../../core/services/hmac_service.dart';
 import '../models/payment.dart';
 import '../models/invoice_sequence.dart';
+import 'dart:async' show unawaited;
+import '../../core/sync/sync_queue.dart';
+import '../../core/sync/sync_providers.dart';
+import '../../data/models/sync_job.dart';
 // import 'web/web_payment_repository.dart';
 // import '../../core/providers/web_data_store.dart';
 
@@ -18,8 +22,9 @@ abstract class IPaymentRepository {
 class IsarPaymentRepository implements IPaymentRepository {
   final Isar? _isar;
   final HmacService _hmacService;
+  final SyncQueue? _syncQueue;
 
-  IsarPaymentRepository(this._isar, this._hmacService);
+  IsarPaymentRepository(this._isar, this._hmacService, [this._syncQueue]);
 
   @override
   Future<List<Payment>> getAll() async {
@@ -47,6 +52,11 @@ class IsarPaymentRepository implements IPaymentRepository {
     await _isar.writeTxn(() async {
       await _isar.payments.put(payment);
     });
+    unawaited(_syncQueue?.enqueueUpsert(
+      collection: SyncCollection.payments,
+      docId: payment.id,
+      payload: payment.toJson(),
+    ));
   }
 
   @override
@@ -79,6 +89,7 @@ final paymentRepositoryProvider = Provider<IPaymentRepository>((ref) {
       // return WebPaymentRepository(webStore);
     }
   }
-  final hmac = ref.watch(hmacServiceProvider);
-  return IsarPaymentRepository(isar, hmac);
+  final hmac      = ref.watch(hmacServiceProvider);
+  final syncQueue = ref.watch(syncQueueProvider);
+  return IsarPaymentRepository(isar, hmac, syncQueue);
 });

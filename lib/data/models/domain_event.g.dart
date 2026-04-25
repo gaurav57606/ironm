@@ -15,7 +15,7 @@ extension GetDomainEventCollection on Isar {
 
 const DomainEventSchema = CollectionSchema(
   name: r'DomainEvent',
-  id: 382618845766319,
+  id: 1234368916745282086,
   properties: {
     r'deviceId': PropertySchema(
       id: 0,
@@ -66,7 +66,7 @@ const DomainEventSchema = CollectionSchema(
   idName: r'isarId',
   indexes: {
     r'id': IndexSchema(
-      id: 1211655477508376,
+      id: -3268401673993471357,
       name: r'id',
       unique: true,
       replace: false,
@@ -79,7 +79,7 @@ const DomainEventSchema = CollectionSchema(
       ],
     ),
     r'entityId': IndexSchema(
-      id: 6764682772025001,
+      id: 745355021660786263,
       name: r'entityId',
       unique: false,
       replace: false,
@@ -92,7 +92,7 @@ const DomainEventSchema = CollectionSchema(
       ],
     ),
     r'deviceTimestamp': IndexSchema(
-      id: 7648209652572990,
+      id: 313892984313766684,
       name: r'deviceTimestamp',
       unique: false,
       replace: false,
@@ -105,7 +105,7 @@ const DomainEventSchema = CollectionSchema(
       ],
     ),
     r'synced': IndexSchema(
-      id: 4202743377483245,
+      id: -4832663256418428922,
       name: r'synced',
       unique: false,
       replace: false,

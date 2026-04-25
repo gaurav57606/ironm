@@ -5,6 +5,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../shared/widgets/status_bar_wrapper.dart';
 import '../../dashboard/viewmodel/dashboard_viewmodel.dart';
 import 'package:intl/intl.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class AnalyticsScreen extends ConsumerWidget {
   const AnalyticsScreen({super.key});
@@ -17,17 +18,6 @@ class AnalyticsScreen extends ConsumerWidget {
     final activeCount = stats.activeMembers;
     final revenue = stats.monthlyRevenue;
     
-    // Normalize weekly revenue for the graph
-    final maxRev = stats.weeklyRevenue.isNotEmpty 
-        ? stats.weeklyRevenue.reduce((a, b) => a > b ? a : b) 
-        : 0.0;
-    final normalizedRev = stats.weeklyRevenue.map((v) => maxRev > 0 ? (v / maxRev).clamp(0.1, 1.0) : 0.1).toList();
-
-    // Normalize attendance for the graph
-    final maxAttendance = stats.attendanceTrends.isNotEmpty 
-        ? stats.attendanceTrends.reduce((a, b) => a > b ? a : b) 
-        : 0.0;
-    final normalizedAttendance = stats.attendanceTrends.map((v) => maxAttendance > 0 ? (v / maxAttendance).clamp(0.1, 1.0) : 0.1).toList();
 
     return Container(
       decoration: const BoxDecoration(
@@ -47,9 +37,9 @@ class AnalyticsScreen extends ConsumerWidget {
                     children: [
                       _buildMainStats(activeCount, revenue, stats.memberGrowth, stats.revenueGrowth),
                       const SizedBox(height: 32),
-                      _buildGraphSection('Revenue Trends', normalizedRev),
+                      _buildRevenueBarChart(stats.weeklyRevenue),
                       const SizedBox(height: 24),
-                      _buildGraphSection('Member Attendance', normalizedAttendance),
+                      _buildAttendanceLineChart(stats.attendanceTrends),
                       const SizedBox(height: 32),
                       Text('Top Performing Plans', style: AppTextStyles.h3),
                       const SizedBox(height: 20),
@@ -152,7 +142,13 @@ class AnalyticsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildGraphSection(String title, List<double> values) {
+  Widget _buildRevenueBarChart(List<double> weeklyRevenue) {
+    const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final maxY = weeklyRevenue.isEmpty
+        ? 1.0
+        : weeklyRevenue.reduce((a, b) => a > b ? a : b);
+    final effectiveMax = maxY == 0 ? 1.0 : maxY;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -166,50 +162,224 @@ class AnalyticsScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+              Text('Revenue Trends',
+                  style: AppTextStyles.body
+                      .copyWith(fontWeight: FontWeight.bold)),
               const Icon(Icons.more_horiz, color: AppColors.textMuted),
             ],
           ),
           const SizedBox(height: 24),
           SizedBox(
-            height: 120,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: values.asMap().entries.map((entry) {
-                return Container(
-                  width: 24,
-                  height: 120 * entry.value,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.orange.withValues(alpha: 0.8), AppColors.orange.withValues(alpha: 0.2)],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.orange.withValues(alpha: 0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+            height: 140,
+            child: BarChart(
+              BarChartData(
+                maxY: effectiveMax * 1.2,
+                minY: 0,
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: effectiveMax / 4,
+                  getDrawingHorizontalLine: (_) => FlLine(
+                    color: AppColors.border,
+                    strokeWidth: 0.5,
                   ),
-                );
-              }).toList(),
+                ),
+                borderData: FlBorderData(show: false),
+                titlesData: FlTitlesData(
+                  leftTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, meta) {
+                        final idx = value.toInt();
+                        if (idx < 0 || idx >= days.length) {
+                          return const SizedBox.shrink();
+                        }
+                        return Text(
+                          days[idx],
+                          style: AppTextStyles.bodySmall.copyWith(
+                              fontSize: 10,
+                              color: AppColors.textMuted),
+                        );
+                      },
+                      reservedSize: 20,
+                    ),
+                  ),
+                ),
+                barGroups: weeklyRevenue
+                    .asMap()
+                    .entries
+                    .map(
+                      (e) => BarChartGroupData(
+                        x: e.key,
+                        barRods: [
+                          BarChartRodData(
+                            toY: e.value == 0 ? 0.0 : e.value,
+                            width: 14,
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(6)),
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.orange,
+                                AppColors.orange.withValues(alpha: 0.3),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                    .toList(),
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (_) => AppColors.elevation3,
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      return BarTooltipItem(
+                        '₹${rod.toY.toStringAsFixed(0)}',
+                        TextStyle(
+                            color: AppColors.orange,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10),
+                      );
+                    },
+                  ),
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAttendanceLineChart(List<double> attendanceTrends) {
+    const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final maxY = attendanceTrends.isEmpty
+        ? 1.0
+        : attendanceTrends.reduce((a, b) => a > b ? a : b);
+    final effectiveMax = maxY == 0 ? 1.0 : maxY;
+
+    final spots = attendanceTrends
+        .asMap()
+        .entries
+        .map((e) => FlSpot(e.key.toDouble(), e.value))
+        .toList();
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppColors.elevation2,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day) {
-              return SizedBox(
-                width: 24,
-                child: Center(
-                  child: Text(day, style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: AppColors.textMuted)),
+            children: [
+              Text('Member Attendance',
+                  style: AppTextStyles.body
+                      .copyWith(fontWeight: FontWeight.bold)),
+              const Icon(Icons.more_horiz, color: AppColors.textMuted),
+            ],
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 140,
+            child: LineChart(
+              LineChartData(
+                maxY: effectiveMax * 1.2,
+                minY: 0,
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: effectiveMax / 4,
+                  getDrawingHorizontalLine: (_) => FlLine(
+                    color: AppColors.border,
+                    strokeWidth: 0.5,
+                  ),
                 ),
-              );
-            }).toList(),
+                borderData: FlBorderData(show: false),
+                titlesData: FlTitlesData(
+                  leftTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, meta) {
+                        final idx = value.toInt();
+                        if (idx < 0 || idx >= days.length) {
+                          return const SizedBox.shrink();
+                        }
+                        return Text(
+                          days[idx],
+                          style: AppTextStyles.bodySmall.copyWith(
+                              fontSize: 10,
+                              color: AppColors.textMuted),
+                        );
+                      },
+                      reservedSize: 20,
+                    ),
+                  ),
+                ),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    curveSmoothness: 0.35,
+                    color: AppColors.blue,
+                    barWidth: 2.5,
+                    isStrokeCapRound: true,
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, bar, index) =>
+                          FlDotCirclePainter(
+                        radius: 3,
+                        color: AppColors.blue,
+                        strokeWidth: 1.5,
+                        strokeColor: AppColors.bg,
+                      ),
+                    ),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.blue.withValues(alpha: 0.25),
+                          AppColors.blue.withValues(alpha: 0.0),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ],
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (_) => AppColors.elevation3,
+                    getTooltipItems: (spots) => spots
+                        .map((s) => LineTooltipItem(
+                              '${s.y.toInt()} check-ins',
+                              TextStyle(
+                                  color: AppColors.blue,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 10),
+                            ))
+                        .toList(),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),

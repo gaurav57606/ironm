@@ -6,6 +6,10 @@ import 'package:isar/isar.dart';
 import '../../core/providers/database_provider.dart';
 import '../../core/services/hmac_service.dart';
 import '../models/plan.dart';
+import 'dart:async' show unawaited;
+import '../../core/sync/sync_queue.dart';
+import '../../core/sync/sync_providers.dart';
+import '../../data/models/sync_job.dart';
 import 'web/web_plan_repository.dart';
 import '../../core/providers/web_data_store.dart';
 
@@ -20,8 +24,9 @@ abstract class IPlanRepository {
 class IsarPlanRepository implements IPlanRepository {
   final Isar? _isar;
   final HmacService _hmacService;
+  final SyncQueue? _syncQueue;
 
-  IsarPlanRepository(this._isar, this._hmacService);
+  IsarPlanRepository(this._isar, this._hmacService, [this._syncQueue]);
 
   @override
   Future<List<Plan>> getAll() async {
@@ -42,6 +47,11 @@ class IsarPlanRepository implements IPlanRepository {
     await _isar.writeTxn(() async {
       await _isar.plans.put(plan);
     });
+    unawaited(_syncQueue?.enqueueUpsert(
+      collection: SyncCollection.plans,
+      docId: plan.id,
+      payload: plan.toJson(),
+    ));
   }
 
   @override
@@ -50,6 +60,10 @@ class IsarPlanRepository implements IPlanRepository {
     await _isar.writeTxn(() async {
       await _isar.plans.filter().idEqualTo(id).deleteAll();
     });
+    unawaited(_syncQueue?.enqueueDelete(
+      collection: SyncCollection.plans,
+      docId: id,
+    ));
   }
 
   @override
@@ -68,6 +82,7 @@ final planRepositoryProvider = Provider<IPlanRepository>((ref) {
       return WebPlanRepository(webStore);
     }
   }
-  final hmac = ref.watch(hmacServiceProvider);
-  return IsarPlanRepository(isar, hmac);
+  final hmac      = ref.watch(hmacServiceProvider);
+  final syncQueue = ref.watch(syncQueueProvider);
+  return IsarPlanRepository(isar, hmac, syncQueue);
 });

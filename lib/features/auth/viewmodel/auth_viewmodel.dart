@@ -12,6 +12,14 @@ import '../../../core/services/backup_service.dart';
 import '../../../core/providers/backup_provider.dart';
 import 'package:isar/isar.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../../core/firebase/firebase_providers.dart';
+import '../../../core/firebase/auth_error_mapper.dart';
+import '../../../core/sync/sync_providers.dart';
+import '../../../core/sync/sync_worker.dart';
+import '../../../core/sync/sync_coordinator.dart';
+import '../../../core/security/entitlement_provider.dart';
+import '../../../core/security/entitlement_guard.dart';
 
 part 'auth_viewmodel.g.dart';
 
@@ -67,6 +75,9 @@ class AuthViewModel extends _$AuthViewModel {
   late ISettingsRepository _settingsRepo;
   late BackupService _backupService;
   Isar? _isar;
+  FirebaseAuth? _firebaseAuth;
+  SyncWorker? _syncWorker;
+  SyncCoordinator? _syncCoordinator;
 
   @override
   AuthState build() {
@@ -75,6 +86,9 @@ class AuthViewModel extends _$AuthViewModel {
     _settingsRepo = ref.watch(settingsRepositoryProvider);
     _backupService = ref.watch(backupServiceProvider);
     _isar = ref.watch(isarProvider);
+    _firebaseAuth = ref.watch(firebaseAuthProvider);
+    _syncWorker      = ref.watch(syncWorkerProvider);
+    _syncCoordinator = ref.watch(syncCoordinatorProvider);
 
     _init();
     return AuthState(settings: AppSettings());
@@ -102,6 +116,10 @@ class AuthViewModel extends _$AuthViewModel {
     if (_isar != null && state.unlocked) {
       NotificationService.checkAndNotifyExpiring(_isar!);
       _backupService.autoBackupIfDue(_isar!);
+      // Clear stale sync lock from previous session
+      unawaited(_syncCoordinator?.clearAllLocks());
+      // Flush any queued jobs from last offline session
+      unawaited(_syncWorker?.flush());
     }
   }
 
@@ -130,18 +148,30 @@ class AuthViewModel extends _$AuthViewModel {
   Future<bool> login(String email, String password) async {
     state = state.copyWith(isLoading: true);
     try {
-      final savedEmail = await _storage.read(key: 'auth_email');
-      final savedPassword = await _storage.read(key: 'auth_password');
-      if (email == savedEmail && password == savedPassword) {
-        state = state.copyWith(
-          isAuthenticated: true,
-          authAttempts: 0,
-          isLoading: false,
+      if (_firebaseAuth != null) {
+        // Firebase path
+        await _firebaseAuth!.signInWithEmailAndPassword(
+          email: email.trim(),
+          password: password,
         );
-        return true;
+      } else {
+        // Offline fallback — local credentials
+        final savedEmail = await _storage.read(key: 'auth_email');
+        final savedPassword = await _storage.read(key: 'auth_password');
+        if (email.trim() != savedEmail || password != savedPassword) {
+          state = state.copyWith(isLoading: false);
+          return false;
+        }
       }
+      state = state.copyWith(
+        isAuthenticated: true,
+        authAttempts: 0,
+        isLoading: false,
+      );
+      return true;
+    } on FirebaseAuthException catch (e) {
       state = state.copyWith(isLoading: false);
-      return false;
+      throw AuthErrorMapper.map(e.code);
     } catch (e) {
       state = state.copyWith(isLoading: false);
       return false;
@@ -155,22 +185,40 @@ class AuthViewModel extends _$AuthViewModel {
   }) async {
     state = state.copyWith(isLoading: true);
     try {
-      await _storage.write(key: 'auth_email', value: email);
-      await _storage.write(key: 'auth_password', value: password);
-      
+      if (_firebaseAuth != null) {
+        // Firebase path
+        await _firebaseAuth!.createUserWithEmailAndPassword(
+          email: email.trim(),
+          password: password,
+        );
+      } else {
+        // Offline fallback — store locally
+        await _storage.write(key: 'auth_email', value: email.trim());
+        await _storage.write(key: 'auth_password', value: password);
+      }
       final owner = OwnerProfile(
         gymName: gymName,
         ownerName: ownerName,
         phone: phone ?? '',
       );
       await saveOwner(owner);
-      return true;
-    } finally {
       state = state.copyWith(isLoading: false);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      state = state.copyWith(isLoading: false);
+      throw AuthErrorMapper.map(e.code);
+    } catch (e) {
+      state = state.copyWith(isLoading: false);
+      return false;
     }
   }
 
   Future<void> signOut() async {
+    try {
+      await _firebaseAuth?.signOut();
+    } catch (_) {}
+    // Clear entitlement cache on sign out
+    ref.read(entitlementGuardProvider).clear();
     await _settingsRepo.clearAll();
     await _storage.deleteAll();
     state = AuthState(
@@ -206,9 +254,16 @@ class AuthViewModel extends _$AuthViewModel {
 
   Future<void> sendPasswordReset(String email) async {
     state = state.copyWith(isLoading: true);
-    // Mocking email behavior with a delay
-    await Future.delayed(const Duration(seconds: 1));
-    state = state.copyWith(isLoading: false);
+    try {
+      if (_firebaseAuth != null) {
+        await _firebaseAuth!.sendPasswordResetEmail(email: email.trim());
+      }
+      // If Firebase is null, silently succeed — no-op (no mock delay)
+    } on FirebaseAuthException catch (e) {
+      throw AuthErrorMapper.map(e.code);
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
   }
 }
 

@@ -5,6 +5,9 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../shared/widgets/status_bar_wrapper.dart';
 import '../../../features/auth/viewmodel/auth_viewmodel.dart';
+import '../../members/viewmodel/members_viewmodel.dart';
+import '../../billing/viewmodel/payments_viewmodel.dart';
+import '../../../core/services/csv_export_service.dart';
 
 
 
@@ -17,6 +20,8 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late bool _darkMode;
+  bool _isExporting = false;
+  final _csvService = const CsvExportService();
 
   @override
   void initState() {
@@ -62,6 +67,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     
                     _buildSectionHeader('System'),
                     _buildSettingsItem(Icons.cloud_upload_outlined, 'Backup & Restore', 'Keep your data safe', () => context.push('/settings/backup')),
+                    
+                    _buildSectionHeader('Export Data'),
+                    _buildSettingsItem(
+                      _isExporting ? Icons.hourglass_empty_rounded : Icons.file_download_outlined,
+                      'Export Members',
+                      'Download member list as CSV',
+                      _isExporting ? null : _exportMembers,
+                    ),
+                    _buildSettingsItem(
+                      _isExporting ? Icons.hourglass_empty_rounded : Icons.receipt_long_outlined,
+                      'Export Payments',
+                      'Download payment records as CSV',
+                      _isExporting ? null : _exportPayments,
+                    ),
                     _buildSettingsItem(Icons.security_rounded, 'Security & PIN', 'Biometric & PIN lock', () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Change your PIN from the login screen'), duration: Duration(seconds: 2)),
@@ -251,6 +270,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ),
     );
+  }
+  Future<void> _exportMembers() async {
+    setState(() => _isExporting = true);
+    try {
+      final members = ref.read(membersProvider);
+      await _csvService.exportAndShareMembers(members);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e'), backgroundColor: AppColors.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
+  }
+
+  Future<void> _exportPayments() async {
+    setState(() => _isExporting = true);
+    try {
+      final payments = ref.read(allPaymentsProvider);
+      await _csvService.exportAndSharePayments(payments);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e'), backgroundColor: AppColors.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
   }
 }
 

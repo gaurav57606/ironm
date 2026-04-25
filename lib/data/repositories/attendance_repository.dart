@@ -2,6 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar/isar.dart';
 import '../../core/providers/database_provider.dart';
 import '../models/attendance.dart';
+import 'dart:async' show unawaited;
+import '../../core/sync/sync_queue.dart';
+import '../../core/sync/sync_providers.dart';
+import '../../data/models/sync_job.dart';
 // import 'web/web_attendance_repository.dart';
 // import '../../core/providers/web_data_store.dart';
 
@@ -16,8 +20,9 @@ abstract class IAttendanceRepository {
 
 class IsarAttendanceRepository implements IAttendanceRepository {
   final Isar? _isar;
+  final SyncQueue? _syncQueue;
 
-  IsarAttendanceRepository(this._isar);
+  IsarAttendanceRepository(this._isar, [this._syncQueue]);
 
   @override
   Future<List<Attendance>> getByMember(String memberId) async {
@@ -31,6 +36,11 @@ class IsarAttendanceRepository implements IAttendanceRepository {
     await _isar.writeTxn(() async {
       await _isar.attendances.put(attendance);
     });
+    unawaited(_syncQueue?.enqueueUpsert(
+      collection: SyncCollection.attendance,
+      docId: attendance.attendanceId,
+      payload: attendance.toJson(),
+    ));
   }
 
   @override
@@ -61,5 +71,6 @@ final attendanceRepositoryProvider = Provider<IAttendanceRepository>((ref) {
       // return WebAttendanceRepository(webStore);
     }
   }
-  return IsarAttendanceRepository(isar);
+  final syncQueue = ref.watch(syncQueueProvider);
+  return IsarAttendanceRepository(isar, syncQueue);
 });

@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/viewmodel/auth_viewmodel.dart';
 import '../../shared/widgets/main_shell.dart';
+import '../../core/security/entitlement_provider.dart';
+import '../../features/auth/presentation/subscription_locked_screen.dart';
+import '../../core/security/entitlement_guard.dart';
 
 
 import '../../features/dashboard/presentation/dashboard_screen.dart';
@@ -21,7 +24,7 @@ import '../../features/auth/presentation/onboarding_screen.dart';
 import '../../features/auth/presentation/pin_setup_screen.dart';
 import '../../features/auth/presentation/pin_entry_screen.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
-import '../../features/notifications/presentation/notifications_screen.dart';
+import '../../features/notifications/presentation/notification_inbox_screen.dart';
 
 import '../../features/attendance/presentation/attendance_screen.dart';
 import '../../features/billing/presentation/invoice_screen.dart';
@@ -33,7 +36,8 @@ import '../../features/sales/presentation/sales_history_screen.dart';
 // Bridge notifier — signals GoRouter to re-run redirect when auth changes
 class _AuthChangeNotifier extends ChangeNotifier {
   _AuthChangeNotifier(this._ref) {
-    _ref.listen(authProvider, (_, __) => notifyListeners());
+    _ref.listen(authProvider,       (_, __) => notifyListeners());
+    _ref.listen(entitlementProvider,(_, __) => notifyListeners());
   }
   final Ref _ref;
 }
@@ -72,6 +76,21 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (!isAuth && !isLoggingIn && !isOnboarding) return '/login';
       if (isAuth && !isPinSetup && !isPinSetupPath) return '/setup-pin';
       if (isAuth && isPinSetup && !unlocked && !isPinEntryPath) return '/unlock';
+      // ── Entitlement check (kill switch) ────────────────────────────
+      final entitlement = ref.read(entitlementProvider).value
+          ?? EntitlementStatus.grace; // default to grace while loading
+      final isLockedPath = state.matchedLocation == '/subscription-locked';
+
+      if (isAuth && unlocked &&
+          entitlement == EntitlementStatus.expired &&
+          !isLockedPath) {
+        return '/subscription-locked';
+      }
+      if (isLockedPath && entitlement != EntitlementStatus.expired) {
+        return '/dashboard';
+      }
+      // ── End entitlement check ───────────────────────────────────────
+
       if (isAuth && unlocked && (isLoggingIn || isOnboarding || isLoadingPath)) {
         return '/dashboard';
       }
@@ -107,6 +126,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/subscription-locked',
+        builder: (context, state) => const SubscriptionLockedScreen(),
       ),
 
 
@@ -192,7 +215,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/notifications',
-                builder: (context, state) => const NotificationsScreen(),
+                builder: (context, state) => const NotificationInboxScreen(),
               ),
 
             ],

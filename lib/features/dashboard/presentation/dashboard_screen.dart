@@ -12,6 +12,7 @@ import 'widgets/member_health_donut.dart';
 import 'widgets/revenue_mini_bars.dart';
 import 'widgets/alert_banner.dart';
 import '../../../data/models/member.dart';
+import '../../notifications/viewmodel/notification_viewmodel.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -83,6 +84,56 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildNotificationBell(BuildContext context, WidgetRef ref) {
+    final unreadCount = ref.watch(unreadNotificationCountProvider);
+
+    return GestureDetector(
+      onTap: () => context.push('/notifications'),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: AppColors.bg3,
+              borderRadius: BorderRadius.circular(11),
+              border: Border.all(color: AppColors.border),
+            ),
+            alignment: Alignment.center,
+            child: const Icon(Icons.notifications_none_rounded,
+                color: AppColors.textPrimary, size: 20),
+          ),
+          if (unreadCount > 0)
+            Positioned(
+              top: -2,
+              right: -2,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: AppColors.error,
+                  shape: BoxShape.circle,
+                ),
+                constraints: const BoxConstraints(
+                  minWidth: 16,
+                  minHeight: 16,
+                ),
+                child: Text(
+                  unreadCount > 9 ? '9+' : unreadCount.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 8,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHeader(BuildContext context, WidgetRef ref) {
     final owner = ref.watch(authProvider).owner;
     return Padding(
@@ -105,19 +156,28 @@ class DashboardScreen extends ConsumerWidget {
               ),
             ],
           ),
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: AppColors.orange,
-              borderRadius: BorderRadius.circular(11),
-            ),
-            alignment: Alignment.center,
-            child: Text(owner?.ownerName.isNotEmpty == true ? owner!.ownerName[0].toUpperCase() : 'I',
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16)),
+          Row(
+            children: [
+              _buildNotificationBell(context, ref),
+              const SizedBox(width: 12),
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: AppColors.orange,
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                    owner?.ownerName.isNotEmpty == true
+                        ? owner!.ownerName[0].toUpperCase()
+                        : 'I',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16)),
+              ),
+            ],
           ),
         ],
       ),

@@ -4,6 +4,10 @@ import 'package:collection/collection.dart';
 import 'package:go_router/go_router.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import 'package:share_plus/share_plus.dart';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
+import 'package:printing/printing.dart';
+import '../../../core/services/invoice_pdf_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../shared/widgets/status_bar_wrapper.dart';
@@ -15,6 +19,7 @@ import '../../../data/models/payment.dart';
 import '../../../data/models/attendance.dart';
 import '../../../core/utils/date_formatter.dart';
 import 'renew_dialog.dart';
+import '../../../core/services/hmac_service.dart';
 
 
 class MemberDetailScreen extends ConsumerStatefulWidget {
@@ -26,6 +31,7 @@ class MemberDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _MemberDetailScreenState extends ConsumerState<MemberDetailScreen> {
+  bool _isPdfGenerating = false;
   @override
   Widget build(BuildContext context) {
     final members = ref.watch(membersProvider);
@@ -67,7 +73,7 @@ class _MemberDetailScreenState extends ConsumerState<MemberDetailScreen> {
                     _buildSectionHeader('Plan Includes'),
                     _buildPlanIncludesCard(member),
                     _buildSectionHeader('Payment History'),
-                    _buildActivityHistory(payments, attendanceAsync),
+                    _buildActivityHistory(payments, attendanceAsync, member),
                   ],
                 ),
               ),
@@ -109,6 +115,7 @@ class _MemberDetailScreenState extends ConsumerState<MemberDetailScreen> {
             ),
           ),
           _buildStatusBadge(statusColor, days),
+          _buildIntegrityBadge(member),
         ],
       ),
     );
@@ -148,6 +155,58 @@ class _MemberDetailScreenState extends ConsumerState<MemberDetailScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildIntegrityBadge(Member member) {
+    // Only show badge if hmac is non-empty and fails verify
+    if (member.hmacSignature.isEmpty) return const SizedBox.shrink();
+    return FutureBuilder<bool>(
+      future: ref.read(hmacServiceProvider).verifyInstance(member),
+      builder: (context, snap) {
+        if (snap.data == false) {
+          return Padding(
+            padding: const EdgeInsets.only(left: 6),
+            child: Tooltip(
+              message: 'Data integrity check failed',
+              child: Icon(Icons.warning_amber_rounded,
+                  color: AppColors.warning, size: 16),
+            ),
+          );
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Future<void> _sharePaymentPdf(Payment payment, Member member) async {
+    if (_isPdfGenerating) return;
+    setState(() => _isPdfGenerating = true);
+    try {
+      final owner = ref.read(authProvider).owner;
+      final args = {
+        'member':  member.toJson(),
+        'payment': payment.toJson(),
+        'owner':   owner?.toJson(),
+      };
+      final bytes =
+          await compute(InvoicePdfService.generateFromMaps, args);
+      if (!mounted) return;
+      await Printing.sharePdf(
+        bytes: bytes,
+        filename: 'Invoice_${payment.invoiceNumber}.pdf',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not generate PDF: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isPdfGenerating = false);
+    }
   }
 
   Widget _buildActionRow(BuildContext context, Member member) {
@@ -279,7 +338,7 @@ class _MemberDetailScreenState extends ConsumerState<MemberDetailScreen> {
     );
   }
 
-  Widget _buildActivityHistory(List<Payment> payments, AsyncValue<List<Attendance>> attendanceAsync) {
+  Widget _buildActivityHistory(List<Payment> payments, AsyncValue<List<Attendance>> attendanceAsync, Member member) {
     return attendanceAsync.when(
       loading: () => const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
       error: (e, s) => const Center(child: Text('Error loading activity')),
@@ -293,14 +352,14 @@ class _MemberDetailScreenState extends ConsumerState<MemberDetailScreen> {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14),
           child: Column(
-            children: sortedPayments.map((p) => _buildTimelineItem(p)).toList(),
+            children: sortedPayments.map((p) => _buildTimelineItem(p, member)).toList(),
           ),
         );
       },
     );
   }
 
-  Widget _buildTimelineItem(Payment payment) {
+  Widget _buildTimelineItem(Payment payment, Member member) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -333,6 +392,33 @@ class _MemberDetailScreenState extends ConsumerState<MemberDetailScreen> {
                 const SizedBox(height: 1),
                 Text('₹${payment.amount.toInt()}', style: AppTextStyles.label.copyWith(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.orange)),
               ],
+            ),
+          ),
+          GestureDetector(
+            onTap: _isPdfGenerating ? null : () {
+              final members = ref.read(membersProvider);
+              final memberFound = members.firstWhereOrNull(
+                  (m) => m.memberId == widget.memberId);
+              if (memberFound == null) return;
+              _sharePaymentPdf(payment, memberFound);
+            },
+            child: Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: AppColors.bg3,
+                borderRadius: BorderRadius.circular(7),
+                border: Border.all(color: AppColors.border),
+              ),
+              alignment: Alignment.center,
+              child: _isPdfGenerating
+                  ? const SizedBox(
+                      width: 10, height: 10,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 1.5,
+                          color: AppColors.orange))
+                  : const Icon(Icons.picture_as_pdf_outlined,
+                      size: 12, color: AppColors.orange),
             ),
           ),
         ],

@@ -4,6 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
 import 'package:share_plus/share_plus.dart';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
+import 'package:printing/printing.dart';
+import '../../../core/services/invoice_pdf_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
@@ -14,15 +18,23 @@ import '../../../data/models/payment.dart';
 import '../../../data/models/owner_profile.dart';
 import '../../../shared/widgets/status_bar_wrapper.dart';
 
-class InvoiceScreen extends ConsumerWidget {
+class InvoiceScreen extends ConsumerStatefulWidget {
   final String memberId;
   const InvoiceScreen({super.key, required this.memberId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<InvoiceScreen> createState() => _InvoiceScreenState();
+}
+
+class _InvoiceScreenState extends ConsumerState<InvoiceScreen> {
+  bool _isGenerating = false;
+
+  @override
+  Widget build(BuildContext context) {
     final owner = ref.watch(authProvider).owner;
-    final member = ref.watch(membersProvider).firstWhereOrNull((m) => m.memberId == memberId);
-    final payments = ref.watch(memberPaymentsProvider(memberId));
+    final member = ref.watch(membersProvider)
+        .firstWhereOrNull((m) => m.memberId == widget.memberId);
+    final payments = ref.watch(memberPaymentsProvider(widget.memberId));
     final latestPayment = payments.isNotEmpty ? payments.first : null;
 
     if (member == null) {
@@ -65,9 +77,48 @@ class InvoiceScreen extends ConsumerWidget {
           const SizedBox(width: 8),
           Text('Invoice', style: AppTextStyles.h2.copyWith(fontSize: 16)),
           const Spacer(),
-          _buildIconButton(Icons.download_rounded, () {}),
-          const SizedBox(width: 6),
-          _buildIconButton(Icons.print_rounded, () {}),
+          if (_isGenerating)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: SizedBox(
+                  width: 14, height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2)),
+            )
+          else ...[
+            _buildIconButton(Icons.download_rounded, () async {
+              final owner   = ref.read(authProvider).owner;
+              final members = ref.read(membersProvider);
+              final member  = members.firstWhereOrNull(
+                  (m) => m.memberId == widget.memberId);
+              final payments = ref.read(
+                  memberPaymentsProvider(widget.memberId));
+              final payment  = payments.isNotEmpty ? payments.first : null;
+              if (member == null || payment == null) return;
+              final bytes = await _generatePdf(member, payment, owner);
+              if (bytes == null || !mounted) return;
+              await Printing.sharePdf(
+                bytes: bytes,
+                filename: 'Invoice_${payment.invoiceNumber}.pdf',
+              );
+            }),
+            const SizedBox(width: 6),
+            _buildIconButton(Icons.print_rounded, () async {
+              final owner   = ref.read(authProvider).owner;
+              final members = ref.read(membersProvider);
+              final member  = members.firstWhereOrNull(
+                  (m) => m.memberId == widget.memberId);
+              final payments = ref.read(
+                  memberPaymentsProvider(widget.memberId));
+              final payment  = payments.isNotEmpty ? payments.first : null;
+              if (member == null || payment == null) return;
+              final bytes = await _generatePdf(member, payment, owner);
+              if (bytes == null || !mounted) return;
+              await Printing.layoutPdf(
+                onLayout: (_) async => bytes,
+                name: 'Invoice_${payment.invoiceNumber}',
+              );
+            }),
+          ],
         ],
       ),
     );
@@ -253,6 +304,32 @@ class InvoiceScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<Uint8List?> _generatePdf(
+      Member member, Payment payment, OwnerProfile? owner) async {
+    if (_isGenerating) return null;
+    setState(() => _isGenerating = true);
+    try {
+      final args = {
+        'member':  member.toJson(),
+        'payment': payment.toJson(),
+        'owner':   owner?.toJson(),
+      };
+      return await compute(InvoicePdfService.generateFromMaps, args);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not generate PDF: $e'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+      }
+      return null;
+    } finally {
+      if (mounted) setState(() => _isGenerating = false);
+    }
   }
 }
 

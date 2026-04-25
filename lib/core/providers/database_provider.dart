@@ -12,6 +12,7 @@ import 'package:ironm/data/models/sale.dart';
 import 'package:ironm/data/models/owner_profile.dart';
 import 'package:ironm/data/models/invoice_sequence.dart';
 import 'package:ironm/data/models/app_settings.dart';
+import 'package:ironm/data/models/sync_job.dart';
 import 'web_data_store.dart';
 
 final isarProvider = Provider<Isar?>((ref) => null);
@@ -33,6 +34,7 @@ Future<Isar?> initIsar() async {
     OwnerProfileSchema,
     InvoiceSequenceSchema,
     AppSettingsSchema,
+    SyncJobSchema,
   ];
 
   try {

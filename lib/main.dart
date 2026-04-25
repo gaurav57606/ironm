@@ -11,9 +11,35 @@ import 'core/services/notification_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/providers/web_data_store.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'core/sync/midnight_engine.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'core/services/fcm_service.dart';
+
+/// Re-declared here so main.dart can register background handler
+/// before ProviderScope initializes.
+@pragma('vm:entry-point')
+Future<void> _fcmBackgroundHandler(RemoteMessage message) async {
+  debugPrint('FCM background (main.dart): ${message.messageId}');
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Firebase — isolated init. App boots regardless of outcome.
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    await MidnightEngine.register();
+    // FCM init — fire-and-forget, non-fatal
+    // Full init happens after sign-in in FcmService
+    FirebaseMessaging.onBackgroundMessage(_fcmBackgroundHandler);
+  } catch (e) {
+    debugPrint('Firebase init failed (non-fatal): $e');
+  }
+
   await NotificationService.initialize();
   
   final prefs = await SharedPreferences.getInstance();

@@ -21,7 +21,7 @@ dependencies:
   # Local Database — lightweight, pure Dart, no native code
   isar: ^3.1.0
   isar_flutter_libs: ^3.1.0
-  path_provider: ^2.1.2
+  path_provider: ^2.1.5
 
   # Immutable Models
   freezed_annotation: ^2.4.1
@@ -42,9 +42,18 @@ dependencies:
   uuid: ^4.3.3
   file_picker: ^11.0.2
   share_plus: ^10.0.0
-  flutter_local_notifications: ^17.2.2
+  flutter_local_notifications: ^20.1.0
   collection: ^1.19.1
   rxdart: ^0.28.0
+  firebase_core: ^4.7.0
+  firebase_auth: ^6.4.0
+  cloud_firestore: ^6.3.0
+  workmanager: ^0.9.0+3
+  pdf: ^3.11.3
+  printing: ^5.14.3
+  fl_chart: ^1.1.0
+  firebase_messaging: ^16.2.0
+  csv: ^6.0.0
 
 
 
