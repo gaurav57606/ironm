@@ -58,7 +58,7 @@ void main() {
         ProviderScope(
           overrides: [
             authProvider.overrideWith(() => FakeAuthViewModel(AuthState(owner: owner, settings: AppSettings(), isLoading: false))),
-            membersProvider.overrideWithValue([member]),
+            membersProvider.overrideWith((ref) => [member]),
             paymentsStreamProvider.overrideWith((ref) => Stream.value([payment])),
           ],
           child: MaterialApp.router(
@@ -89,7 +89,7 @@ void main() {
         ProviderScope(
           overrides: [
             authProvider.overrideWith(() => FakeAuthViewModel(AuthState(owner: owner, settings: AppSettings(), isLoading: false))),
-            membersProvider.overrideWithValue([member]),
+            membersProvider.overrideWith((ref) => [member]),
             paymentsStreamProvider.overrideWith((ref) => Stream.value([payment])),
           ],
           child: MaterialApp.router(
@@ -120,7 +120,7 @@ void main() {
         ProviderScope(
           overrides: [
             authProvider.overrideWith(() => FakeAuthViewModel(AuthState(owner: owner, settings: AppSettings(), isLoading: false))),
-            membersProvider.overrideWithValue([member]),
+            membersProvider.overrideWith((ref) => [member]),
             paymentsStreamProvider.overrideWith((ref) => Stream.value([payment])),
           ],
           child: MaterialApp.router(

@@ -15,7 +15,7 @@ extension GetOwnerProfileCollection on Isar {
 
 const OwnerProfileSchema = CollectionSchema(
   name: r'OwnerProfile',
-  id: -8460503014834178897,
+  id: -84605030148341,
   properties: {
     r'accountNumber': PropertySchema(
       id: 0,

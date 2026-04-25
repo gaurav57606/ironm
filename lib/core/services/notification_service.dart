@@ -14,7 +14,7 @@ class NotificationService {
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const initSettings = InitializationSettings(android: androidSettings);
     
-    await _notificationsPlugin.initialize(initSettings);
+    await _notificationsPlugin.initialize(settings: initSettings);
     LogService.info('NotificationService', 'Initialized');
   }
 
@@ -38,10 +38,10 @@ class NotificationService {
     const notificationDetails = NotificationDetails(android: androidDetails);
 
     await _notificationsPlugin.show(
-      memberId,
-      title,
-      body,
-      notificationDetails,
+      id: memberId,
+      title: title,
+      body: body,
+      notificationDetails: notificationDetails,
     );
   }
 

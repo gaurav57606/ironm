@@ -1,1 +1,30 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"ironbook-gm-prod","appId":"1:1090040053163:android:e02698f9e0f9f7827966ee","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"ironbook-gm-prod","configurations":{"android":"1:1090040053163:android:e02698f9e0f9f7827966ee","ios":"1:1090040053163:ios:47bc61c3bd7a631a7966ee","web":"1:1090040053163:web:b70b456e69c23bce7966ee","windows":"1:1090040053163:web:ee8ab319c72d6d8e7966ee"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "ironbook-gm-prod",
+          "appId": "1:1090040053163:android:e02698f9e0f9f7827966ee",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "ironbook-gm-prod",
+          "configurations": {
+            "android": "1:1090040053163:android:e02698f9e0f9f7827966ee",
+            "ios": "1:1090040053163:ios:47bc61c3bd7a631a7966ee",
+            "web": "1:1090040053163:web:b70b456e69c23bce7966ee",
+            "windows": "1:1090040053163:web:ee8ab319c72d6d8e7966ee"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "database": "(default)",
+    "location": "us-central1",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}

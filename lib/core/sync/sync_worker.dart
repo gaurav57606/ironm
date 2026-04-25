@@ -3,6 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
+import '../../data/models/member.dart';
+import '../../data/models/payment.dart';
+import '../../data/models/plan.dart';
 import '../../data/models/sync_job.dart';
 import 'sync_queue.dart';
 
@@ -85,7 +88,7 @@ class SyncWorker {
       final basePath = 'gyms/$uid/backups/weekly/$dateKey';
 
       // Members snapshot
-      final members = await isar.members.where().findAll();
+      final members = await isar.collection<Member>().where().findAll();
       final memberBatch = _firestore!.batch();
       for (final m in members) {
         memberBatch.set(
@@ -96,7 +99,7 @@ class SyncWorker {
       await memberBatch.commit();
 
       // Payments snapshot
-      final payments = await isar.payments.where().findAll();
+      final payments = await isar.collection<Payment>().where().findAll();
       final paymentBatch = _firestore!.batch();
       for (final p in payments) {
         paymentBatch.set(
@@ -107,7 +110,7 @@ class SyncWorker {
       await paymentBatch.commit();
 
       // Plans snapshot
-      final plans = await isar.plans.where().findAll();
+      final plans = await isar.collection<Plan>().where().findAll();
       final planBatch = _firestore!.batch();
       for (final pl in plans) {
         planBatch.set(

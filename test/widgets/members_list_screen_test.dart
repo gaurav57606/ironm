@@ -24,7 +24,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            membersProvider.overrideWithValue([member1, member2]),
+            membersProvider.overrideWith((ref) => [member1, member2]),
             clockProvider.overrideWithValue(FakeClock(now)),
           ],
           child: MaterialApp.router(
@@ -58,7 +58,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            membersProvider.overrideWithValue([]),
+            membersProvider.overrideWith((ref) => []),
             clockProvider.overrideWithValue(FakeClock(now)),
           ],
           child: MaterialApp.router(
@@ -92,7 +92,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            membersProvider.overrideWithValue([member1, member2]),
+            membersProvider.overrideWith((ref) => [member1, member2]),
             clockProvider.overrideWithValue(FakeClock(now)),
           ],
           child: MaterialApp.router(

@@ -30,8 +30,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            membersProvider.overrideWithValue([member]),
-            memberPaymentsProvider(member.memberId).overrideWithValue([]),
+            membersProvider.overrideWith((ref) => [member]),
+            memberPaymentsProvider(member.memberId).overrideWith((ref) => []),
             memberAttendanceProvider(member.memberId).overrideWith((ref) => Stream.value([])),
           ],
           child: MaterialApp.router(
@@ -66,8 +66,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            membersProvider.overrideWithValue([member]),
-            memberPaymentsProvider(member.memberId).overrideWithValue([]),
+            membersProvider.overrideWith((ref) => [member]),
+            memberPaymentsProvider(member.memberId).overrideWith((ref) => []),
             memberAttendanceProvider(member.memberId).overrideWith((ref) => Stream.value([])),
           ],
           child: MaterialApp.router(
@@ -98,8 +98,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            membersProvider.overrideWithValue([member]),
-            memberPaymentsProvider(member.memberId).overrideWithValue([]),
+            membersProvider.overrideWith((ref) => [member]),
+            memberPaymentsProvider(member.memberId).overrideWith((ref) => []),
             memberAttendanceProvider(member.memberId).overrideWith((ref) => Stream.value([])),
           ],
           child: MaterialApp.router(

@@ -15,7 +15,7 @@ extension GetAttendanceCollection on Isar {
 
 const AttendanceSchema = CollectionSchema(
   name: r'Attendance',
-  id: 4618409064190326501,
+  id: 46184090641903,
   properties: {
     r'attendanceId': PropertySchema(
       id: 0,
@@ -40,7 +40,7 @@ const AttendanceSchema = CollectionSchema(
   idName: r'isarId',
   indexes: {
     r'attendanceId': IndexSchema(
-      id: -5047753669473436316,
+      id: -50477536694734,
       name: r'attendanceId',
       unique: true,
       replace: false,
@@ -53,7 +53,7 @@ const AttendanceSchema = CollectionSchema(
       ],
     ),
     r'memberId': IndexSchema(
-      id: 5707689632932325803,
+      id: 57076896329323,
       name: r'memberId',
       unique: false,
       replace: false,
@@ -66,7 +66,7 @@ const AttendanceSchema = CollectionSchema(
       ],
     ),
     r'checkInTime': IndexSchema(
-      id: 1992443686853293017,
+      id: 19924436868532,
       name: r'checkInTime',
       unique: false,
       replace: false,

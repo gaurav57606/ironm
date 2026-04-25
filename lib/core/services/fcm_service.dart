@@ -93,10 +93,10 @@ class FcmService {
     final notification = message.notification;
     if (notification == null) return;
     _localNotifications.show(
-      notification.hashCode,
-      notification.title ?? 'IronM',
-      notification.body ?? '',
-      NotificationDetails(
+      id: notification.hashCode,
+      title: notification.title ?? 'IronM',
+      body: notification.body ?? '',
+      notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           _channel.id,
           _channel.name,

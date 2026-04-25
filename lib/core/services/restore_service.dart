@@ -196,6 +196,7 @@ class RestoreService {
   );
 
   Attendance _mapToAttendance(Map<String, dynamic> a) => Attendance(
+    attendanceId: a['attendanceId'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
     memberId: a['memberId'],
     checkInTime: DateTime.parse(a['checkInTime']).toLocal(),
   );

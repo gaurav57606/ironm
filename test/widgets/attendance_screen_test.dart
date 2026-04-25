@@ -12,14 +12,14 @@ void main() {
   group('AttendanceScreen Widget Tests', () {
     final now = DateTime.now();
     final member = Member(memberId: 'm1', name: 'John Doe', joinDate: now, lastUpdated: now);
-    final attendance = Attendance(memberId: 'm1', checkInTime: now);
+    final attendance = Attendance(attendanceId: 'a1', memberId: 'm1', checkInTime: now);
 
     testWidgets('Attendance records for today are visible', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             attendanceProvider.overrideWith((ref) => [attendance]),
-            membersProvider.overrideWithValue([member]),
+            membersProvider.overrideWith((ref) => [member]),
           ],
           child: MaterialApp.router(
             routerConfig: GoRouter(
@@ -44,7 +44,7 @@ void main() {
         ProviderScope(
           overrides: [
             attendanceProvider.overrideWith((ref) => []),
-            membersProvider.overrideWithValue([member]),
+            membersProvider.overrideWith((ref) => [member]),
           ],
           child: MaterialApp.router(
             routerConfig: GoRouter(

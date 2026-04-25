@@ -31,7 +31,7 @@ void main() {
         ProviderScope(
           overrides: [
             dashboardStatsProvider.overrideWith((ref) => Stream.value(stats)),
-            membersProvider.overrideWithValue([]),
+            membersProvider.overrideWith((ref) => []),
             authProvider.overrideWith(() => FakeAuthViewModel(AuthState(isLoading: false, settings: AppSettings()))),
           ],
           child: MaterialApp.router(
@@ -68,7 +68,7 @@ void main() {
         ProviderScope(
           overrides: [
             dashboardStatsProvider.overrideWith((ref) => Stream.value(stats)),
-            membersProvider.overrideWithValue([]),
+            membersProvider.overrideWith((ref) => []),
             authProvider.overrideWith(() => FakeAuthViewModel(AuthState(isLoading: false, settings: AppSettings()))),
           ],
           child: MaterialApp.router(

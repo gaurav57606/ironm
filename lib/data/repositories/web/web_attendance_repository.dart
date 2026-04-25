@@ -41,7 +41,7 @@ class WebAttendanceRepository implements IAttendanceRepository {
 
   @override
   Future<void> save(Attendance attendance) async {
-    await _store.save(_collection, attendance.id, attendance.toJson());
+    await _store.save(_collection, attendance.attendanceId, attendance.toJson());
     final list = await getAll();
     _subject.add(list);
   }

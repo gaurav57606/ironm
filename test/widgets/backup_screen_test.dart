@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ironm/features/settings/presentation/screens/backup_screen.dart';
 import 'package:ironm/core/providers/backup_provider.dart';
+import 'package:ironm/core/providers/database_provider.dart';
 import 'package:ironm/core/services/backup_service.dart';
 import 'package:ironm/core/services/restore_service.dart';
 
@@ -25,6 +26,8 @@ void main() {
         ProviderScope(
           overrides: [
             backupViewModelProvider.overrideWith(DataBackupViewModel.new),
+            isarProvider.overrideWithValue(null),
+            backupServiceProvider.overrideWith((ref) => BackupService()),
           ],
           child: MaterialApp.router(
             routerConfig: GoRouter(
@@ -53,6 +56,8 @@ void main() {
         ProviderScope(
           overrides: [
             backupViewModelProvider.overrideWith(LoadingBackupViewModel.new),
+            isarProvider.overrideWithValue(null),
+            backupServiceProvider.overrideWith((ref) => BackupService()),
           ],
           child: MaterialApp.router(
             routerConfig: GoRouter(

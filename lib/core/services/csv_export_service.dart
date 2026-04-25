@@ -105,7 +105,7 @@ class CsvExportService {
     final dir  = await getTemporaryDirectory();
     final file = File('${dir.path}/$fileName');
     await file.writeAsString(content, flush: true);
-    await SharePlus.instance.shareXFiles(
+    await Share.shareXFiles(
       [XFile(file.path, mimeType: mimeType)],
       subject: fileName,
     );

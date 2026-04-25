@@ -65,7 +65,7 @@ void main() {
       ];
 
       final List<Attendance> attendances = [
-        Attendance(memberId: '1', checkInTime: now),
+        Attendance(attendanceId: 'a1', memberId: '1', checkInTime: now),
       ];
 
       when(() => mockMemberQB.watch(fireImmediately: true)).thenAnswer((_) => Stream.value(members));

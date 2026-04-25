@@ -15,7 +15,7 @@ extension GetProductCollection on Isar {
 
 const ProductSchema = CollectionSchema(
   name: r'Product',
-  id: -6222113721139403729,
+  id: -62221137211394,
   properties: {
     r'category': PropertySchema(
       id: 0,
@@ -60,7 +60,7 @@ const ProductSchema = CollectionSchema(
   idName: r'isarId',
   indexes: {
     r'id': IndexSchema(
-      id: -3268401673993471357,
+      id: -32684016739934,
       name: r'id',
       unique: true,
       replace: false,
@@ -73,7 +73,7 @@ const ProductSchema = CollectionSchema(
       ],
     ),
     r'category': IndexSchema(
-      id: -7560358558326323820,
+      id: -75603585583263,
       name: r'category',
       unique: false,
       replace: false,

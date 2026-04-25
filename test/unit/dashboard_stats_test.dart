@@ -129,7 +129,7 @@ void main() {
 
     test('attendanceTrends maps 4 check-ins today to index 6', () {
       final attendances = [
-        for (var i = 0; i < 4; i++) Attendance(memberId: 'm$i', checkInTime: now),
+        for (var i = 0; i < 4; i++) Attendance(attendanceId: 'a$i', memberId: 'm$i', checkInTime: now),
       ];
       final stats = calculateDashboardStats(members: [], payments: [], attendances: attendances, now: now);
       expect(stats.attendanceTrends[6], 4.0);

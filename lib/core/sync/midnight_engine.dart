@@ -35,7 +35,7 @@ class MidnightEngine {
         _taskName,
         frequency: const Duration(hours: 12),
         constraints: Constraints(networkType: NetworkType.connected),
-        existingWorkPolicy: ExistingWorkPolicy.keep,
+        existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
       );
       debugPrint('MidnightEngine: Periodic task registered.');
     } catch (e) {

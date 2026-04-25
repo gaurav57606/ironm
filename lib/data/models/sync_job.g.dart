@@ -15,7 +15,7 @@ extension GetSyncJobCollection on Isar {
 
 const SyncJobSchema = CollectionSchema(
   name: r'SyncJob',
-  id: -358741778409288680,
+  id: -35874177840928,
   properties: {
     r'collection': PropertySchema(
       id: 0,
@@ -57,7 +57,7 @@ const SyncJobSchema = CollectionSchema(
   idName: r'isarId',
   indexes: {
     r'docId': IndexSchema(
-      id: -9164048795576814174,
+      id: -91640487955768,
       name: r'docId',
       unique: false,
       replace: false,
@@ -70,7 +70,7 @@ const SyncJobSchema = CollectionSchema(
       ],
     ),
     r'createdAt': IndexSchema(
-      id: -3433535483987302584,
+      id: -34335354839873,
       name: r'createdAt',
       unique: false,
       replace: false,

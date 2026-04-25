@@ -1,78 +1,32 @@
-# IronBook GM
+# IronM: Gym Management System
 
-**IronBook GM** is a local-first, high-performance Gym Management system designed for solo owners. It prioritizes data integrity, offline reliability, and cryptographic security.
+A production-grade gym management application built with Flutter, focusing on performance, security, and offline reliability.
 
 ## 🚀 Key Features
 
-- **Local-First Architecture**: Operations are performed instantly on the device. Syncing to the cloud is a passive background process.
-- **Event-Sourced Sync**: All changes are recorded as domain events in a persistent outbox, ensuring 100% reconciliation accuracy.
-- **Cryptographic Integrity**: All local snapshots are HMAC-signed to prevent unauthorized data tampering.
-- **Gym Leader Profile**: Dynamic business metrics transformed into RPG-style character stats.
-- **Modular Design**: Clean separation between `core` (logic), `features` (UI), and `shared` (widgets).
+- **Membership Tracking**: Full lifecycle management (Active, Expiring, Expired).
+- **Invoicing System**: Automated GST-compliant invoices with unique sequence generation.
+- **Biometric Security**: Multi-layer authentication with PIN fallback.
+- **Offline First**: High-performance local storage using Isar Database.
+- **Data Hardening**: Centralized error handling and Crashlytics integration.
 
 ## 🛠 Tech Stack
 
-- **Framework**: Flutter 3.22+
-- **State Management**: Riverpod 2.x
-- **Local Authorities**: Hive (Cache/Snapshots) & Drift (Persistent Outbox)
-- **Security**: HMAC SHA-256, Biometrics, Entitlement Heartbeat
-- **Infrastructure**: Firebase (Cloud Backup), Workmanager (Background Sync)
+- **Framework**: Flutter (Riverpod for state management)
+- **Database**: Isar (NoSQL)
+- **Navigation**: GoRouter
+- **Persistence**: Flutter Secure Storage
+- **Analytics**: Firebase Crashlytics (Hardened ErrorHandler)
 
-## 📦 Project Structure
+## 🧪 Testing Architecture
 
-```text
-lib/
-├── core/
-│   ├── data/        # Repositories, Models, Drift/Hive setup
-│   ├── providers/   # Global business logic providers
-│   ├── security/    # HMAC, PIN, and Entitlement guards
-│   ├── services/    # Infrastructure (PDF, Config, Logger)
-│   └── sync/        # Background workers and recovery logic
-├── features/        # Feature-based UI modules
-│   ├── auth/
-│   ├── members/
-│   ├── pos/
-│   └── backup/
-└── shared/          # Common widgets and utilities
-```
+IronM implements a robust 4-layer testing suite:
+1. **Unit Tests**: Providers, models, and repositories.
+2. **Widget Tests**: Screen rendering and user interactions (fully mocked).
+3. **Integration Tests**: Feature-level flows.
+4. **Fakes & Mocks**: Native dependencies (Isar, Firebase) are bypassed in CI/CD via fakes.
 
-## 🛠 Setup & Installation
+## ⚠️ Security & Reliability
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/gaurav57606/ironbook_gm.git
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   flutter pub get
-   ```
-
-3. **Configure Environment**:
-   Copy `.env.example` to `.env` and fill in your keys.
-
-4. **Run Build Runner** (if modifying models):
-   ```bash
-   flutter pub run build_runner build --delete-conflicting-outputs
-   ```
-
-5. **Launch**:
-   ```bash
-   flutter run
-   ```
-
-## 🧪 Testing
-
-Run the full suite of unit and integration tests:
-```bash
-flutter test
-```
-
-## 🏗 Build for Web
-
-```bash
-bash render_build.sh
-```
-
----
-*Built with ❤️ by the IronBook Team.*
+- **Sealed Error Hierarchy**: Prevents unexpected crashes by enforcing exhaustive error handling.
+- **Centralized Handler**: All exceptions are automatically recorded to Crashlytics and mapped to user-friendly messages.
