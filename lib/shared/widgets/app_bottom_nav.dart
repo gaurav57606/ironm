@@ -23,83 +23,81 @@ class AppBottomNavBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(0, Icons.grid_view_rounded, 'Dashboard'),
-          _buildNavItem(1, Icons.people_rounded, 'Members'),
-          _buildFab(context),
-          _buildNavItem(2, Icons.description_rounded, 'POS'),
-          _buildNavItem(5, Icons.settings_rounded, 'Settings'),
-
+          _navItem(0, Icons.grid_view_rounded, 'Home'),
+          _navItem(1, Icons.people_rounded, 'Members'),
+          _navItem(2, Icons.point_of_sale_rounded, 'POS'),
+          _fab(context),
+          _navItem(3, Icons.how_to_reg_rounded, 'Attendance'),
+          _navItem(4, Icons.analytics_rounded, 'Analytics'),
+          _navItem(5, Icons.settings_rounded, 'Settings'),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, String label) {
-    // Mapping internal index to display index
-    // Dashboard: 0 -> 0
-    // Members: 1 -> 1
-    // POS: 3 -> 2
-    // Attendance: 4 -> 3
-    
-    final bool isSelected = currentIndex == index;
+  Widget _navItem(int index, IconData icon, String label) {
+    final bool sel = currentIndex == index;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => onTap(index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 18,
-            color: isSelected ? AppColors.orange : AppColors.textMuted,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 8,
-              fontWeight: FontWeight.w500,
-              color: isSelected ? AppColors.orange : AppColors.textMuted,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: sel ? AppColors.orange : AppColors.textMuted,
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
+                color: sel ? AppColors.orange : AppColors.textMuted,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildFab(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        GestureDetector(
-          onTap: () => context.push('/gym/add-member'),
-          child: Container(
-            width: 44,
-            height: 44,
+  Widget _fab(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push('/add-member'),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(
               color: AppColors.orange,
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.orange.withValues(alpha: 0.3),
-                  blurRadius: 12,
+                  color: AppColors.orange.withValues(alpha: 0.35),
+                  blurRadius: 14,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
-            child: const Icon(Icons.add_rounded, color: Colors.white, size: 24),
+            child: const Icon(Icons.add_rounded, color: Colors.white, size: 26),
           ),
-        ),
-        const SizedBox(height: 4),
-        const Text(
-          'Add',
-          style: TextStyle(
-            fontSize: 8,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textMuted,
+          const SizedBox(height: 4),
+          const Text(
+            'Add',
+            style: TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textMuted,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

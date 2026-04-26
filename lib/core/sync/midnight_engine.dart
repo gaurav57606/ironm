@@ -5,6 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:workmanager/workmanager.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import '../security/entitlement_guard.dart';
 
 import '../../data/models/member.dart';
 import '../../data/models/payment.dart';
@@ -92,6 +95,16 @@ class MidnightEngine {
             if (uid != null) {
               await worker.weeklyBackup(isar: isar, uid: uid);
             }
+          }
+
+          // 6. Entitlement refresh
+          try {
+            const storage = FlutterSecureStorage();
+            final guard = EntitlementGuard(storage, auth, firestore);
+            await guard.check();
+            debugPrint('MidnightEngine: Entitlement refreshed.');
+          } catch (e) {
+            debugPrint('MidnightEngine: Entitlement refresh error (non-fatal) → $e');
           }
         } finally {
           await coordinator.releaseLock(holderId);

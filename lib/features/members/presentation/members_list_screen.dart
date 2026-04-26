@@ -51,7 +51,7 @@ class MembersListScreen extends ConsumerWidget {
 
   Widget _buildAppBar(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 14, right: 14, top: 44, bottom: 8),
+      padding: const EdgeInsets.only(left: 14, right: 14, top: 12, bottom: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -60,7 +60,7 @@ class MembersListScreen extends ConsumerWidget {
             style: AppTextStyles.h2.copyWith(fontSize: 22, fontWeight: FontWeight.w800),
           ),
           GestureDetector(
-             onTap: () => context.push('/gym/add-member'),
+             onTap: () => context.push('/add-member'),
              child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(

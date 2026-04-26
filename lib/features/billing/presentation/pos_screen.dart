@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../shared/widgets/app_button.dart';
-import '../../../shared/widgets/status_bar_wrapper.dart';
+
 import '../../inventory/viewmodel/inventory_viewmodel.dart';
 import '../../sales/viewmodel/sales_viewmodel.dart';
 import '../../members/viewmodel/members_viewmodel.dart';
@@ -54,8 +54,7 @@ class _POSScreenState extends ConsumerState<POSScreen> {
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: StatusBarWrapper(
-          child: Column(
+        body: Column(
             children: [
               _buildAppBar(),
               _buildStatsHeader(ref),
@@ -70,7 +69,6 @@ class _POSScreenState extends ConsumerState<POSScreen> {
               ),
 
             ],
-          ),
         ),
       ),
     );
@@ -81,15 +79,6 @@ class _POSScreenState extends ConsumerState<POSScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
         children: [
-          IconButton(
-            onPressed: () => context.pop(),
-            icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.textPrimary, size: 20),
-            style: IconButton.styleFrom(
-              backgroundColor: AppColors.elevation2,
-              padding: const EdgeInsets.all(12),
-            ),
-          ),
-          const SizedBox(width: 16),
           Text(
             'Point of Sale',
             style: AppTextStyles.h1.copyWith(fontSize: 24),

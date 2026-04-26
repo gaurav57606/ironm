@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
-import '../../../shared/widgets/status_bar_wrapper.dart';
 import '../../../features/auth/viewmodel/auth_viewmodel.dart';
 import '../../members/viewmodel/members_viewmodel.dart';
 import '../../payments/viewmodel/payments_viewmodel.dart';
@@ -19,7 +19,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  late bool _darkMode;
+
   bool _exportingMembers = false;
   bool _exportingPayments = false;
   final _csvService = const CsvExportService();
@@ -27,8 +27,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize dark mode from settings if available, else false
-    _darkMode = false; // TODO: Add darkMode to AppSettings model if needed
+    // Dark mode: not yet implemented — hidden from UI
   }
 
   @override
@@ -36,95 +35,69 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return Container(
       decoration: const BoxDecoration(color: AppColors.bg),
       child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: StatusBarWrapper(
-          child: Column(
-            children: [
-              _buildHeader(context, ref),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  children: [
-                    _buildSectionHeader('General'),
-                    _buildSettingsItem(Icons.person_outline_rounded, 'Account Settings', 'Manage your gym profile', () => context.push('/settings/account')),
-                    _buildSettingsItem(Icons.card_membership_rounded, 'Membership Plans', 'Manage plans & pricing', () => context.push('/settings/plans')),
-                    _buildSettingsItem(Icons.notifications_none_rounded, 'Notifications', 'Expiry alerts & reminders', () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Notification settings coming soon'), duration: Duration(seconds: 2)),
-                      );
-                    }),
-                    _buildSettingsItem(Icons.sync_rounded, 'Data Synchronization', 'Offline mode — backup via Backup & Restore', () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('This app works offline. Use Backup & Restore to save your data.'), duration: Duration(seconds: 3)),
-                      );
-                    }),
-                    _buildSettingsToggle(
-                      Icons.dark_mode_outlined,
-                      'Dark Mode',
-                      _darkMode ? 'Dark mode enabled' : 'Light mode enabled',
-                      _darkMode,
-                      (v) => setState(() => _darkMode = v),
-                    ),
-                    
-                    _buildSectionHeader('System'),
-                    _buildSettingsItem(Icons.cloud_upload_outlined, 'Backup & Restore', 'Keep your data safe', () => context.push('/settings/backup')),
-                    
-                    _buildSectionHeader('Export Data'),
-                    _buildExportTile(
-                      Icons.file_download_outlined,
-                      'Export Members',
-                      'Download member list as CSV',
-                      _exportingMembers,
-                      _exportMembers,
-                    ),
-                    _buildExportTile(
-                      Icons.receipt_long_outlined,
-                      'Export Payments',
-                      'Download payment records as CSV',
-                      _exportingPayments,
-                      _exportPayments,
-                    ),
-                    _buildSettingsItem(Icons.security_rounded, 'Security & PIN', 'Biometric & PIN lock', () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Change your PIN from the login screen'), duration: Duration(seconds: 2)),
-                      );
-                    }),
-                    _buildSettingsItem(Icons.language_rounded, 'Language', 'English (IN)', () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Only English (IN) is supported'), duration: Duration(seconds: 2)),
-                      );
-                    }),
-                    
-                    _buildSectionHeader('About'),
-                    _buildSettingsItem(Icons.info_outline_rounded, 'App Version', 'v1.4.2 (Production)', null),
-                    _buildSettingsItem(Icons.help_outline_rounded, 'Help & Support', 'Contact IronBook team', () {
-                      showDialog(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          backgroundColor: AppColors.bg3,
-                          title: Text('Help & Support', style: AppTextStyles.h3),
-                          content: Text(
-                            'For support, contact:\nsupport@ironm.app\n\nVersion: v1.4.2',
-                            style: AppTextStyles.body.copyWith(fontSize: 11),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => ctx.pop(),
-                              child: const Text('Close', style: TextStyle(color: AppColors.orange)),
-                            ),
-                          ],
+        backgroundColor: Colors.transparent,        body: Column(
+          children: [
+            _buildHeader(context, ref),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                children: [
+                  _buildSectionHeader('General'),
+                  _buildSettingsItem(Icons.person_outline_rounded, 'Account Settings', 'Manage your gym profile', () => context.push('/settings/account')),
+                  _buildSettingsItem(Icons.card_membership_rounded, 'Membership Plans', 'Manage plans & pricing', () => context.push('/settings/plans')),
+                  _buildSettingsItem(Icons.notifications_none_rounded, 'Notifications', 'Expiry alerts — coming soon', null),
+                  _buildSettingsItem(Icons.sync_rounded, 'Data Synchronization', 'Auto-syncs when online', null),
+                  
+                  _buildSectionHeader('System'),
+                  _buildSettingsItem(Icons.cloud_upload_outlined, 'Backup & Restore', 'Keep your data safe', () => context.push('/settings/backup')),
+                  
+                  _buildSectionHeader('Export Data'),
+                  _buildExportTile(
+                    Icons.file_download_outlined,
+                    'Export Members',
+                    'Download member list as CSV',
+                    _exportingMembers,
+                    _exportMembers,
+                  ),
+                  _buildExportTile(
+                    Icons.receipt_long_outlined,
+                    'Export Payments',
+                    'Download payment records as CSV',
+                    _exportingPayments,
+                    _exportPayments,
+                  ),
+                  _buildSettingsItem(Icons.security_rounded, 'Security & PIN', 'PIN & biometric — coming soon', null),
+                  _buildSettingsItem(Icons.language_rounded, 'Language', 'English (IN)', null),
+                  
+                  _buildSectionHeader('About'),
+                  _buildSettingsItem(Icons.info_outline_rounded, 'App Version', 'v1.4.2 (Production)', null),
+                  _buildSettingsItem(Icons.help_outline_rounded, 'Help & Support', 'Contact IronBook team', () {
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: AppColors.bg3,
+                        title: Text('Help & Support', style: AppTextStyles.h3),
+                        content: Text(
+                          'For support, contact:\nsupport@ironm.app\n\nVersion: v1.4.2',
+                          style: AppTextStyles.body.copyWith(fontSize: 11),
                         ),
-                      );
-                    }),
-                    
-                    const SizedBox(height: 20),
-                    _buildLogoutButton(ref),
-                    const SizedBox(height: 40),
-                  ],
-                ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => ctx.pop(),
+                            child: const Text('Close', style: TextStyle(color: AppColors.orange)),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                  
+                  const SizedBox(height: 20),
+                  _buildLogoutButton(ref),
+                  const SizedBox(height: 40),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -136,8 +109,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
       child: Row(
         children: [
-          _buildIconButton(Icons.chevron_left, () => context.pop()),
-          const SizedBox(width: 12),
           Text('Settings', style: AppTextStyles.h2.copyWith(fontSize: 20)),
           const Spacer(),
           Container(
@@ -156,22 +127,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Widget _buildIconButton(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: AppColors.bg3,
-          borderRadius: BorderRadius.circular(9),
-          border: Border.all(color: AppColors.border),
-        ),
-        alignment: Alignment.center,
-        child: Icon(icon, size: 16, color: AppColors.textPrimary),
-      ),
-    );
-  }
+
 
   Widget _buildSectionHeader(String title) {
     return Padding(
@@ -216,39 +172,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Widget _buildSettingsToggle(IconData icon, String title, String subtitle, bool value, ValueChanged<bool> onChanged) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      decoration: BoxDecoration(
-        color: AppColors.bg3,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: ListTile(
-        dense: true,
-        leading: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: AppColors.bg4,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          alignment: Alignment.center,
-          child: Icon(icon, size: 16, color: AppColors.orange),
-        ),
-        title: Text(title, style: AppTextStyles.body.copyWith(fontSize: 12, fontWeight: FontWeight.w600)),
-        subtitle: Text(subtitle, style: AppTextStyles.label.copyWith(fontSize: 9, color: AppColors.textMuted)),
-        trailing: Switch(
-          value: value,
-          onChanged: onChanged,
-          activeColor: AppColors.orange,
-          activeTrackColor: AppColors.orange.withValues(alpha: 0.2),
-          inactiveThumbColor: AppColors.textMuted,
-          inactiveTrackColor: AppColors.bg4,
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildLogoutButton(WidgetRef ref) {
     return Padding(

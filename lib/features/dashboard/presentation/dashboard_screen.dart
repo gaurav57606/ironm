@@ -4,15 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/security/entitlement_provider.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../../members/viewmodel/members_viewmodel.dart';
 import '../viewmodel/dashboard_viewmodel.dart';
-import '../../../shared/widgets/status_bar_wrapper.dart';
 import 'widgets/member_health_donut.dart';
 import 'widgets/revenue_mini_bars.dart';
 import 'widgets/alert_banner.dart';
 import '../../../data/models/member.dart';
-import '../../notifications/viewmodel/notification_viewmodel.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -23,6 +22,32 @@ class DashboardScreen extends ConsumerWidget {
     final statsAsync = ref.watch(dashboardStatsProvider);
     final stats = statsAsync.value ?? const DashboardStats();
 
+    final entitlement = ref.watch(entitlementProvider);
+    final graceBanner = entitlement.value == EntitlementStatus.grace
+        ? Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.warning.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.warning.withOpacity(0.5)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.warning_amber_rounded,
+                    color: AppColors.warning, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Your subscription is expiring soon. Contact support to renew.',
+                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.warning),
+                  ),
+                ),
+              ],
+            ),
+          )
+        : const SizedBox.shrink();
+
     final activeCount = stats.activeMembers;
     final expiringCount = stats.expiringMembers;
     final expiredCount = stats.expiredMembers;
@@ -32,107 +57,57 @@ class DashboardScreen extends ConsumerWidget {
       decoration: const BoxDecoration(color: AppColors.bg),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: StatusBarWrapper(
-          child: Column(
-            children: [
-          _buildHeader(context, ref),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.only(bottom: 24),
-                  children: [
-                    _buildSubHeader(),
-                    _buildStatsGrid(
-                        totalCount, activeCount, expiringCount, expiredCount),
-                    MemberHealthDonut(
-                      active: activeCount,
-                      expiring: expiringCount,
-                      expired: expiredCount,
+        body: Column(
+          children: [
+            graceBanner,
+            _buildHeader(context, ref),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.only(bottom: 24),
+                children: [
+                  _buildSubHeader(),
+                  _buildStatsGrid(
+                      totalCount, activeCount, expiringCount, expiredCount),
+                  MemberHealthDonut(
+                    active: activeCount,
+                    expiring: expiringCount,
+                    expired: expiredCount,
+                  ),
+                  if (expiredCount > 0)
+                    AlertBanner(
+                      title: '$expiredCount memberships expired',
+                      subtitle: 'Tap to view and take action',
+                      color: AppColors.expired,
+                      onTap: () {
+                        ref.read(memberTabProvider.notifier).state = 3;
+                        context.go('/gym');
+                      },
                     ),
-                    if (expiredCount > 0)
-                      AlertBanner(
-                        title: '$expiredCount memberships expired',
-                        subtitle: 'Tap to view and take action',
-                        color: AppColors.expired,
-                        onTap: () {
-                          ref.read(memberTabProvider.notifier).state = 3;
-                          context.go('/gym');
-                        },
-                      ),
-                    if (expiringCount > 0)
-                      AlertBanner(
-                        title: '$expiringCount expiring in 7 days',
-                        subtitle: 'Tap to notify members',
-                        color: AppColors.expiring,
-                        onTap: () {
-                          ref.read(memberTabProvider.notifier).state = 2;
-                          context.go('/gym');
-                        },
-                      ),
-                    const SizedBox(height: 12),
-                    _buildSectionHeader(
-                        context, 'Due Today', null),
-                    _buildDueTodayList(members),
-                    _buildSectionHeader(context, 'This Month', null),
-                    RevenueMiniBars(revenue: stats.monthlyRevenue, trend: 12),
-                  ],
-                ),
+                  if (expiringCount > 0)
+                    AlertBanner(
+                      title: '$expiringCount expiring in 7 days',
+                      subtitle: 'Tap to notify members',
+                      color: AppColors.expiring,
+                      onTap: () {
+                        ref.read(memberTabProvider.notifier).state = 2;
+                        context.go('/gym');
+                      },
+                    ),
+                  const SizedBox(height: 12),
+                  _buildSectionHeader(
+                      context, 'Due Today', null),
+                  _buildDueTodayList(members),
+                  _buildSectionHeader(context, 'This Month', null),
+                  RevenueMiniBars(revenue: stats.monthlyRevenue, trend: 12),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildNotificationBell(BuildContext context, WidgetRef ref) {
-    final unreadCount = ref.watch(unreadNotificationCountProvider);
-
-    return GestureDetector(
-      onTap: () => context.push('/gym/notifications'),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: AppColors.bg3,
-              borderRadius: BorderRadius.circular(11),
-              border: Border.all(color: AppColors.border),
-            ),
-            alignment: Alignment.center,
-            child: const Icon(Icons.notifications_none_rounded,
-                color: AppColors.textPrimary, size: 20),
-          ),
-          if (unreadCount > 0)
-            Positioned(
-              top: -2,
-              right: -2,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
-                  color: AppColors.error,
-                  shape: BoxShape.circle,
-                ),
-                constraints: const BoxConstraints(
-                  minWidth: 16,
-                  minHeight: 16,
-                ),
-                child: Text(
-                  unreadCount > 9 ? '9+' : unreadCount.toString(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 8,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildHeader(BuildContext context, WidgetRef ref) {
     final owner = ref.watch(authProvider).owner;
@@ -158,8 +133,6 @@ class DashboardScreen extends ConsumerWidget {
           ),
           Row(
             children: [
-              _buildNotificationBell(context, ref),
-              const SizedBox(width: 12),
               Container(
                 width: 38,
                 height: 38,

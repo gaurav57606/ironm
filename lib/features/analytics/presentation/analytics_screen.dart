@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
-import '../../../shared/widgets/status_bar_wrapper.dart';
+
 import '../../dashboard/viewmodel/dashboard_viewmodel.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -25,37 +25,33 @@ class AnalyticsScreen extends ConsumerWidget {
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: StatusBarWrapper(
-          child: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildAppBar(),
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.all(24),
-                    children: [
-                      _buildMainStats(activeCount, revenue, stats.memberGrowth, stats.revenueGrowth),
-                      const SizedBox(height: 32),
-                      _buildRevenueBarChart(stats.weeklyRevenue),
-                      const SizedBox(height: 24),
-                      _buildAttendanceLineChart(stats.attendanceTrends),
-                      const SizedBox(height: 32),
-                      Text('Top Performing Plans', style: AppTextStyles.h3),
-                      const SizedBox(height: 20),
-                      if (stats.topPlans.isEmpty)
-                        const Center(child: Text('No plan data available', style: TextStyle(color: AppColors.textMuted)))
-                      else
-                        ...stats.topPlans.asMap().entries.map((entry) {
-                          final colors = [AppColors.primary, AppColors.blue, AppColors.active];
-                          return _buildPlanRank(entry.value.name, entry.value.percent, colors[entry.key % colors.length]);
-                        }),
-                    ],
-                  ),
-                ),
-              ],
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildAppBar(),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(24),
+                children: [
+                  _buildMainStats(activeCount, revenue, stats.memberGrowth, stats.revenueGrowth),
+                  const SizedBox(height: 32),
+                  _buildRevenueBarChart(stats.weeklyRevenue),
+                  const SizedBox(height: 24),
+                  _buildAttendanceLineChart(stats.attendanceTrends),
+                  const SizedBox(height: 32),
+                  Text('Top Performing Plans', style: AppTextStyles.h3),
+                  const SizedBox(height: 20),
+                  if (stats.topPlans.isEmpty)
+                    const Center(child: Text('No plan data available', style: TextStyle(color: AppColors.textMuted)))
+                  else
+                    ...stats.topPlans.asMap().entries.map((entry) {
+                      final colors = [AppColors.primary, AppColors.blue, AppColors.active];
+                      return _buildPlanRank(entry.value.name, entry.value.percent, colors[entry.key % colors.length]);
+                    }),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
 import 'package:collection/collection.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
-import '../../../shared/widgets/status_bar_wrapper.dart';
 import '../viewmodel/attendance_viewmodel.dart';
 import '../../members/viewmodel/members_viewmodel.dart';
 import '../../../data/models/attendance.dart';
@@ -38,29 +37,27 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
       decoration: const BoxDecoration(color: AppColors.bg),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: StatusBarWrapper(
-          child: Column(
-            children: [
-              _buildAppBar(context),
-              _buildDateSelector(),
-              Expanded(
-                child: filteredAttendance.isEmpty
-                    ? _buildEmptyState()
-                    : ListView.separated(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 10),
-                        itemCount: filteredAttendance.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 8),
-                        itemBuilder: (ctx, i) {
-                          final record = filteredAttendance[i];
-                          final member = members.firstWhereOrNull(
-                              (m) => m.memberId == record.memberId);
-                          return _buildAttendanceTile(record, member);
-                        },
-                      ),
-              ),
-            ],
-          ),
+        body: Column(
+          children: [
+            _buildAppBar(context),
+            _buildDateSelector(),
+            Expanded(
+              child: filteredAttendance.isEmpty
+                  ? _buildEmptyState()
+                  : ListView.separated(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                      itemCount: filteredAttendance.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (ctx, i) {
+                        final record = filteredAttendance[i];
+                        final member = members.firstWhereOrNull(
+                            (m) => m.memberId == record.memberId);
+                        return _buildAttendanceTile(record, member);
+                      },
+                    ),
+            ),
+          ],
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () => _showCheckInSheet(context, members),
@@ -76,8 +73,6 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
       child: Row(
         children: [
-          _buildIconButton(Icons.chevron_left, () => context.pop()),
-          const SizedBox(width: 12),
           Text('Attendance', style: AppTextStyles.h2.copyWith(fontSize: 20)),
           const Spacer(),
           _buildIconButton(Icons.calendar_month_rounded, () async {
@@ -85,7 +80,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
               context: context,
               initialDate: _selectedDate,
               firstDate: DateTime(2024),
-              lastDate: DateTime(2026),
+              lastDate: DateTime.now().add(const Duration(days: 730)),
             );
             if (picked != null) {
               setState(() => _selectedDate = picked);

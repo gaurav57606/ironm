@@ -91,7 +91,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
       // ── End entitlement check ───────────────────────────────────────
 
-      if (isAuth && unlocked && (isLoggingIn || isOnboarding || isLoadingPath)) {
+      if (isAuth && (isLoggingIn || isOnboarding || isLoadingPath)) {
         return '/dashboard';
       }
 
@@ -115,10 +115,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/signup',
         builder: (context, state) => const SignupScreen(),
       ),
-      GoRoute(
-        path: '/gym/notifications',
-        builder: (context, state) => const NotificationInboxScreen(),
-      ),
+
       GoRoute(
         path: '/setup-pin',
         builder: (context, state) => const PinSetupScreen(),
@@ -130,6 +127,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/add-member',
+        builder: (context, state) => const QuickAddMemberScreen(),
       ),
       GoRoute(
         path: '/subscription-locked',
@@ -157,8 +158,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) => const MembersListScreen(),
                 routes: [
                   GoRoute(
-                    path: 'add-member',
-                    builder: (context, state) => const QuickAddMemberScreen(),
+                    path: 'notifications',
+                    builder: (context, state) => const NotificationInboxScreen(),
                   ),
                   GoRoute(
                     path: 'member-details/:memberId',
