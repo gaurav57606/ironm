@@ -1,32 +1,16 @@
-# IronM: Gym Management System
+# ironcontrol
 
-A production-grade gym management application built with Flutter, focusing on performance, security, and offline reliability.
+A new Flutter project.
 
-## 🚀 Key Features
+## Getting Started
 
-- **Membership Tracking**: Full lifecycle management (Active, Expiring, Expired).
-- **Invoicing System**: Automated GST-compliant invoices with unique sequence generation.
-- **Biometric Security**: Multi-layer authentication with PIN fallback.
-- **Offline First**: High-performance local storage using Isar Database.
-- **Data Hardening**: Centralized error handling and Crashlytics integration.
+This project is a starting point for a Flutter application.
 
-## 🛠 Tech Stack
+A few resources to get you started if this is your first Flutter project:
 
-- **Framework**: Flutter (Riverpod for state management)
-- **Database**: Isar (NoSQL)
-- **Navigation**: GoRouter
-- **Persistence**: Flutter Secure Storage
-- **Analytics**: Firebase Crashlytics (Hardened ErrorHandler)
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-## 🧪 Testing Architecture
-
-IronM implements a robust 4-layer testing suite:
-1. **Unit Tests**: Providers, models, and repositories.
-2. **Widget Tests**: Screen rendering and user interactions (fully mocked).
-3. **Integration Tests**: Feature-level flows.
-4. **Fakes & Mocks**: Native dependencies (Isar, Firebase) are bypassed in CI/CD via fakes.
-
-## ⚠️ Security & Reliability
-
-- **Sealed Error Hierarchy**: Prevents unexpected crashes by enforcing exhaustive error handling.
-- **Centralized Handler**: All exceptions are automatically recorded to Crashlytics and mapped to user-friendly messages.
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.

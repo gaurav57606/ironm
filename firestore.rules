@@ -1,30 +1,30 @@
-// Replace [YOUR_ADMIN_UID_PLACEHOLDER] with your Firebase UID before deploying.
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /entitlements/{uid} {
-      allow read: if request.auth.uid == resource.data.userId || request.auth.uid == '[YOUR_ADMIN_UID_PLACEHOLDER]';
-      allow write: if request.auth.uid == '[YOUR_ADMIN_UID_PLACEHOLDER]';
+    // 1. User Root - Owners can only read/write their own profile and keys
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // 2. Events Subcollection - The heart of the event-sourced architecture
+      match /events/{eventId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // 3. Snapshots Subcollection - Optional backups
+      match /snapshots/{snapshotId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // 4. Device Keys - For HMAC restoration
+      match /device_keys/{deviceId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
-
-    match /gyms/{uid}/members/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
-    }
-    match /gyms/{uid}/payments/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
-    }
-    match /gyms/{uid}/attendance/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
-    }
-    match /gyms/{uid}/plans/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
-    }
-    match /gyms/{uid}/backups/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
-    }
-
-    match /{document=**} {
-      allow read, write: if false;
+    
+    // 5. Entitlements - Admin-written, User-read only
+    match /entitlements/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == 'FLfAWXAXTvbdF2mHWdoTx129gM63';
     }
   }
 }
