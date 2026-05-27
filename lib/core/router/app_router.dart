@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/admin_auth_provider.dart';
 import '../../screens/login_screen.dart';
-import '../../screens/dashboard_screen.dart';
+import '../../screens/main_shell.dart';
 import '../../screens/subscribers_list_screen.dart';
 import '../../screens/subscriber_detail_screen.dart';
 import '../../screens/create_subscriber_screen.dart';
@@ -48,7 +48,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/dashboard',
-        builder: (_, __) => const DashboardScreen(),
+        builder: (_, __) => const MainShell(),
       ),
       GoRoute(
         path: '/subscribers',
