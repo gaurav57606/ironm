@@ -28,6 +28,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final authStatus = ref.read(adminAuthProvider);
       final isLoginPath = state.matchedLocation == '/login';
+      final isRootPath = state.matchedLocation == '/';
 
       if (authStatus == AdminAuthStatus.loading) return null;
 
@@ -36,8 +37,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         return isLoginPath ? null : '/login';
       }
 
-      if (authStatus == AdminAuthStatus.loggedIn && isLoginPath) {
-        return '/dashboard';
+      if (authStatus == AdminAuthStatus.loggedIn) {
+        if (isLoginPath || isRootPath) {
+          return '/dashboard';
+        }
       }
       return null;
     },

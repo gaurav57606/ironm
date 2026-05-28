@@ -152,7 +152,7 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                   ),
                   TextButton(
-                    onPressed: () => context.go('/subscribers'),
+                    onPressed: () => context.push('/subscribers'),
                     child: Text(
                       'View',
                       style: AcTextStyles.bodySmall.copyWith(
@@ -171,7 +171,7 @@ class DashboardScreen extends ConsumerWidget {
             children: [
               Text('Recent (by expiry)', style: AcTextStyles.title),
               TextButton(
-                onPressed: () => context.go('/subscribers'),
+                onPressed: () => context.push('/subscribers'),
                 child: Text(
                   'View All',
                   style: AcTextStyles.bodySmall.copyWith(

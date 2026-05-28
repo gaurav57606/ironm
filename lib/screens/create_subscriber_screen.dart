@@ -69,7 +69,7 @@ class _CreateSubscriberScreenState extends ConsumerState<CreateSubscriberScreen>
           content: Text('Subscriber created successfully.'),
           backgroundColor: AcColors.active,
         ));
-        context.pop(); // go_router pop back to previous screen
+        context.go('/subscribers');
       }
     } catch (e) {
       if (mounted) {

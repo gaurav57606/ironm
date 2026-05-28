@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../core/constants/ac_colors.dart';
 import '../core/constants/ac_strings.dart';
@@ -22,11 +23,79 @@ class _SubscriberDetailScreenState extends ConsumerState<SubscriberDetailScreen>
   bool _editingNotes = false;
   final TextEditingController _notesCtrl = TextEditingController();
   bool _savingNotes = false;
+  bool _savingGrace = false;
 
   @override
   void dispose() {
     _notesCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _editGracePeriod(BuildContext context, WidgetRef ref, EntitlementRecord record) async {
+    int tempDays = record.gracePeriodDays;
+    final confirmed = await showDialog<int>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setStateDialog) => AlertDialog(
+          backgroundColor: AcColors.bg2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text('Edit Grace Period', style: AcTextStyles.title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Set the number of days after expiry before the account is fully locked.',
+                  style: AcTextStyles.bodySmall),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: tempDays > 0 ? () => setStateDialog(() => tempDays--) : null,
+                    icon: const Icon(Icons.remove_circle_outline, color: AcColors.textSecondary),
+                  ),
+                  SizedBox(
+                    width: 48,
+                    child: Text('$tempDays days', textAlign: TextAlign.center, style: AcTextStyles.label),
+                  ),
+                  IconButton(
+                    onPressed: tempDays < 30 ? () => setStateDialog(() => tempDays++) : null,
+                    icon: const Icon(Icons.add_circle_outline, color: AcColors.primary),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, null),
+              child: Text('Cancel', style: AcTextStyles.bodySmall.copyWith(color: AcColors.textSecondary)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, tempDays),
+              child: Text('Save', style: AcTextStyles.label.copyWith(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmed == null || confirmed == record.gracePeriodDays) return;
+    setState(() => _savingGrace = true);
+    try {
+      await ref.read(entitlementWriteServiceProvider).updateGracePeriod(record.userId, confirmed);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Grace period updated.'),
+        backgroundColor: AcColors.active,
+      ));
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to update: $e'),
+        backgroundColor: AcColors.expired,
+      ));
+    } finally {
+      if (mounted) setState(() => _savingGrace = false);
+    }
   }
 
   @override
@@ -91,7 +160,27 @@ class _SubscriberDetailScreenState extends ConsumerState<SubscriberDetailScreen>
                       _InfoRow('App ID', record.appId),
                       _InfoRow(
                           'Plan', record.planId.isEmpty ? '—' : record.planId),
-                      _InfoRow('Grace Period', '${record.gracePeriodDays} days'),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 110,
+                              child: Text('Grace Period', style: AcTextStyles.bodySmall.copyWith(color: AcColors.textMuted)),
+                            ),
+                            Text('${record.gracePeriodDays} days',
+                                style: AcTextStyles.bodySmall.copyWith(color: AcColors.textPrimary, fontWeight: FontWeight.w500)),
+                            const Spacer(),
+                            _savingGrace
+                                ? const SizedBox(width: 16, height: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: AcColors.primary))
+                                : GestureDetector(
+                                    onTap: () => _editGracePeriod(context, ref, record),
+                                    child: const Icon(Icons.edit_outlined, size: 16, color: AcColors.primary),
+                                  ),
+                          ],
+                        ),
+                      ),
                       _InfoRow('Started',
                           DateFormat('dd MMM yyyy').format(record.startDate)),
                       _InfoRow('Expires',
@@ -128,6 +217,18 @@ class _SubscriberDetailScreenState extends ConsumerState<SubscriberDetailScreen>
                   runSpacing: 10,
                   children: [
                     _ActionButton(
+                      label: '+7 Days',
+                      icon: Icons.add_circle_outline_rounded,
+                      color: AcColors.active,
+                      onPressed: () => _extend(ref, record, 7),
+                    ),
+                    _ActionButton(
+                      label: '+15 Days',
+                      icon: Icons.add_circle_outline_rounded,
+                      color: AcColors.active,
+                      onPressed: () => _extend(ref, record, 15),
+                    ),
+                    _ActionButton(
                       label: '+30 Days',
                       icon: Icons.add_circle_outline_rounded,
                       color: AcColors.active,
@@ -143,14 +244,48 @@ class _SubscriberDetailScreenState extends ConsumerState<SubscriberDetailScreen>
                       label: 'Suspend',
                       icon: Icons.pause_circle_outline_rounded,
                       color: AcColors.expiring,
-                      onPressed: () => _setStatus(ref, record.userId,
-                          'suspended', AcStrings.suspended),
+                      onPressed: () async {
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (ctx) => AlertDialog(
+                            backgroundColor: AcColors.bg2,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            title: Row(
+                              children: [
+                                const Icon(Icons.pause_circle_outline_rounded, color: AcColors.expiring, size: 22),
+                                const SizedBox(width: 10),
+                                Text('Suspend Subscriber?', style: AcTextStyles.title),
+                              ],
+                            ),
+                            content: Text(
+                              'This will suspend ${record.businessName}. '
+                              'They will be locked out until you manually reactivate them.',
+                              style: AcTextStyles.bodySmall,
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: Text('Cancel', style: AcTextStyles.bodySmall.copyWith(color: AcColors.textSecondary)),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(backgroundColor: AcColors.expiring),
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: Text('Yes, Suspend', style: AcTextStyles.label.copyWith(color: Colors.white)),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirmed != true) return;
+                        if (!context.mounted) return;
+                        _setStatus(context, ref, record.userId, 'suspended', AcStrings.suspended);
+                      },
                     ),
                     _ActionButton(
                       label: 'Reactivate',
                       icon: Icons.play_circle_outline_rounded,
                       color: AcColors.primary,
-                      onPressed: () => _setStatus(ref, record.userId,
+                      onPressed: () => _setStatus(context, ref, record.userId,
                           'active', AcStrings.reactivated),
                     ),
                   ],
@@ -250,6 +385,52 @@ class _SubscriberDetailScreenState extends ConsumerState<SubscriberDetailScreen>
                     ],
                   ),
                 ],
+                const SizedBox(height: 24),
+                const Divider(color: AcColors.border),
+                const SizedBox(height: 16),
+                const _SectionHeader('Danger Zone'),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AcColors.expired.withValues(alpha: 0.07),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AcColors.expired.withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Delete Subscriber',
+                        style: AcTextStyles.bodySmall.copyWith(
+                          color: AcColors.expired,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Permanently removes this subscriber and all their data from the system. This cannot be undone.',
+                        style: AcTextStyles.subtext,
+                      ),
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _deleteSubscriber(context, ref, record),
+                          icon: const Icon(Icons.delete_forever_rounded, color: AcColors.expired, size: 18),
+                          label: Text('Delete Subscriber',
+                              style: AcTextStyles.label.copyWith(color: AcColors.expired)),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: AcColors.expired.withValues(alpha: 0.5)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 40),
               ],
             ),
@@ -266,9 +447,14 @@ class _SubscriberDetailScreenState extends ConsumerState<SubscriberDetailScreen>
           .read(entitlementWriteServiceProvider)
           .extendExpiry(record.userId, record.expiresAt, days);
       if (!mounted) return;
+      final msg = {
+        7: AcStrings.extended7,
+        15: AcStrings.extended15,
+        30: AcStrings.extended30,
+        90: AcStrings.extended90,
+      }[days] ?? 'Subscription extended by $days days.';
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content:
-            Text(days == 30 ? AcStrings.extended30 : AcStrings.extended90),
+        content: Text(msg),
         backgroundColor: AcColors.active,
       ));
     } catch (e) {
@@ -280,17 +466,112 @@ class _SubscriberDetailScreenState extends ConsumerState<SubscriberDetailScreen>
     }
   }
 
-  Future<void> _setStatus(WidgetRef ref, String userId,
+  Future<void> _deleteSubscriber(BuildContext context, WidgetRef ref, EntitlementRecord record) async {
+    // Step 1: Are you sure?
+    final step1 = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AcColors.bg2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(children: [
+          const Icon(Icons.warning_rounded, color: AcColors.expired, size: 22),
+          const SizedBox(width: 10),
+          Text('Delete Subscriber?', style: AcTextStyles.title),
+        ]),
+        content: Text(
+          'You are about to permanently delete "${record.businessName}". This action cannot be undone.',
+          style: AcTextStyles.bodySmall,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false),
+              child: Text('Cancel', style: AcTextStyles.bodySmall.copyWith(color: AcColors.textSecondary))),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AcColors.expired),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Continue', style: AcTextStyles.label.copyWith(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (step1 != true) return;
+    if (!context.mounted) return;
+    // Step 2: Type business name to confirm
+    final nameCtrl = TextEditingController();
+    final step2 = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setStateDialog) => AlertDialog(
+          backgroundColor: AcColors.bg2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text('Confirm Deletion', style: AcTextStyles.title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Type the business name to confirm:',
+                style: AcTextStyles.bodySmall,
+              ),
+              const SizedBox(height: 6),
+              Text('"${record.businessName}"',
+                  style: AcTextStyles.bodySmall.copyWith(
+                      color: AcColors.expired, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 14),
+              TextField(
+                controller: nameCtrl,
+                style: AcTextStyles.body,
+                autofocus: true,
+                decoration: const InputDecoration(hintText: 'Type business name here'),
+                onChanged: (_) => setStateDialog(() {}),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false),
+                child: Text('Cancel', style: AcTextStyles.bodySmall.copyWith(color: AcColors.textSecondary))),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AcColors.expired),
+              onPressed: nameCtrl.text.trim() == record.businessName
+                  ? () => Navigator.pop(ctx, true)
+                  : null,
+              child: Text('Delete Forever', style: AcTextStyles.label.copyWith(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+    nameCtrl.dispose();
+    if (step2 != true) return;
+    try {
+      await ref.read(entitlementWriteServiceProvider).deleteEntitlement(record.userId);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Subscriber deleted successfully.'),
+        backgroundColor: AcColors.active,
+      ));
+      context.go('/subscribers');
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to delete: $e'),
+        backgroundColor: AcColors.expired,
+      ));
+    }
+  }
+
+  Future<void> _setStatus(BuildContext context, WidgetRef ref, String userId,
       String status, String successMsg) async {
     try {
       await ref.read(entitlementWriteServiceProvider).setStatus(userId, status);
-      if (!mounted) return;
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(successMsg),
         backgroundColor: AcColors.active,
       ));
     } catch (e) {
-      if (!mounted) return;
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Failed: $e'),
         backgroundColor: AcColors.expired,

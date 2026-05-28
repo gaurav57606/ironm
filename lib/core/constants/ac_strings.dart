@@ -14,6 +14,8 @@ class AcStrings {
   static const String noSubscribers = 'No subscribers found.';
   static const String killSwitchFailed = 'Failed to update kill switch.';
   static const String notesSaved  = 'Notes saved.';
+  static const String extended7   = 'Subscription extended by 7 days.';
+  static const String extended15  = 'Subscription extended by 15 days.';
   static const String extended30  = 'Subscription extended by 30 days.';
   static const String extended90  = 'Subscription extended by 90 days.';
   static const String suspended   = 'Subscriber suspended.';
